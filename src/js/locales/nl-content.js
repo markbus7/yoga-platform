@@ -9,6 +9,7 @@ export const ROUTINES_NL = {
   neck: { name: 'Nek & schouders', tagline: 'Waar stress zich het eerst verstopt', about: 'Begint met rustig ademen en maakt daarna je nek, schouders en bovenrug los.' },
   hipsback: { name: 'Heupen & onderrug', tagline: 'Maak een dag zitten ongedaan', about: 'Rustige bewegingen voor je onderrug, en daarna houdingen die de heupen openen die door zitten stijf worden.' },
   legs: { name: 'Benen & hamstrings', tagline: 'Kuiten, dijen en de achterkant van je benen', about: 'Eerst staande stretches, dan houdingen op de vloer voor de achterkant van je benen. Je knieën blijven de hele tijd zacht.' },
+  feet: { name: 'Losse voeten', tagline: 'Tenen, voetzolen en enkels die de hele dag in schoenen zitten', about: 'Maakt stijve tenen en enkels wakker, rekt je voetzolen en je wreef, en laat je daarna uitrusten met je benen tegen de muur en je teen\u00ADspreiders in.' },
   upper: { name: 'Bovenlijf ontspannen', tagline: 'Zwaarte\u00ADkracht\u00ADhoudingen voor een gebogen rug', about: 'Lange houdingen voor je borst, schouders en bovenrug. De borstopener op blokken is de ster.' },
   hipopener: { name: 'Diepe heup\u00ADontspanning', tagline: 'Langere houdingen voor koppige heupen', about: 'Gebruikt al je blokken. Bewaar deze voor als je een week of twee aan het oefenen bent.' },
   winddown: { name: 'Tot rust komen', tagline: 'Alles vertragen voor het slapen', about: 'Ademhaling en rustgevende houdingen om je lichaam en je hoofd uit te zetten. Doe het gerust in je pyjama.' },
@@ -44,7 +45,7 @@ export const PROGRAM_NL = {
     ['Maak het voorover hangen ongedaan', 'Schermen en telefoons trekken je schouders de hele dag naar voren. Borstopeners en houdingen voor je bovenrug zetten ze terug waar ze horen.'],
     ['Zitten maakt de voorkant van je heupen stijf', 'Uren op een stoel verkorten de spieren aan de voorkant van je heupen, en die trekken aan je onderrug. De lage uitval en de sfinx maken dat ongedaan.'],
     ['Kaak, schouders, buik', 'Stress verstopt zich op drie plekken. Check ze in elke houding: ontspan je kaak, laat je schouders zakken, maak je buik zacht.'],
-    ['Een beetje trillen mag', 'Kleine trillingen in een houding zijn je spieren die loslaten. Adem door en doe iets minder als het intens wordt.'],
+    ['Zorg goed voor je voeten', 'Schoenen drukken je tenen de hele dag tegen elkaar, en stijve voeten trekken aan je kuiten en je rug. Vandaag maak je ze los. Doe je teen\u00ADspreiders in bij de laatste houding, en loop thuis op blote voeten als het kan.'],
     ['Merk op, oordeel niet', 'Op sommige dagen voel je je stijver dan op andere. Slaap, stress en hoeveel je hebt gezeten maken allemaal verschil. Kom gewoon opdagen.'],
     ['Halverwege: bekijk je vooruitgang', 'Twee weken onderweg. Doe vandaag opnieuw de lenigheids\u00ADtest en vergelijk hem met dag één.'],
     ['Heupen houden veel vast', 'Diepe heuphoudingen kunnen je onrustig of emotioneel maken. Dat is normaal. Blijf bij je adem en gebruik meer steun.'],
@@ -54,7 +55,7 @@ export const PROGRAM_NL = {
     ['Stress zit in je nek', 'Merk je dat je schouders overdag omhoog kruipen? Doe dan de Bureaupauze of twee minuten ademen.'],
     ['Beter slapen', 'Veel mensen vallen sneller in slaap na een paar minuten benen tegen de muur en rustig ademen.'],
     ['De langste houdingen tot nu toe', 'Week vier. De houdingen zijn ongeveer 30% langer dan standaard. Gebruik blokken en kussens, zodat je helemaal kunt ontspannen.'],
-    ['Wandel en drink water', 'Elke dag wandelen en genoeg drinken houden je soepeler tussen de sessies door.'],
+    ['Een beetje trillen mag', 'Kleine trillingen in een houding zijn je spieren die loslaten. Adem door en doe iets minder als het intens wordt.'],
     ['Check je bureau', 'Scherm op ooghoogte, voeten plat op de vloer, en sta elke 45 minuten even op. Voorkomen is makkelijker dan loslaten.'],
     ['Wees lief voor je knieën', 'Leg altijd iets zachts onder je knieën. Een opgevouwen handdoek of het uiteinde van je mat maakt knielende houdingen veel prettiger.'],
     ['Je grens verschuift', 'Het punt waar je een 4 op 10 voelt, verschuift in de loop van de weken. Volg het rustig, jaag het nooit na.'],
@@ -107,6 +108,21 @@ export const GUIDE_NL = [
       ['Onder je voorhoofd', 'Maakt de kindhouding en het smeltend hart rustgevend.'],
     ],
     after: 'Blokken gebruiken is geen valsspelen. Een houding waarin je kunt ontspannen werkt beter dan een diepere waartegen je moet vechten.',
+  },
+  {
+    id: 'spreaders',
+    title: 'Je teen\u00ADspreiders',
+    body: [
+      'Teenspreiders duwen je tenen zachtjes uit elkaar. Schoenen drukken ze de hele dag tegen elkaar, en de kleine spiertjes in je voeten worden stijf. Door ze te spreiden kunnen je voeten ontspannen en beter bewegen, en het voelt fijn na een lange dag.',
+      'Er is weinig onderzoek naar gedaan, dus zie ze als een prettige extra, niet als een behandeling.',
+    ],
+    list: [
+      ['Wanneer je ze draagt', 'Tijdens de liggende en zittende houdingen, of terwijl je leest of tv kijkt. In een sessie krijg je een seintje bij de eerste houding waar ze bij passen, en dan draagt het figuur ze ook.'],
+      ['Hoe lang', 'Begin met 10 minuten. Doe er elke keer een paar minuten bij, tot 20 of 30 minuten.'],
+      ['Wat je voelt', 'Een milde rek tussen je tenen. Doe ze uit als ze knellen of pijn doen, of als je tenen gaan tintelen of gevoelloos worden.'],
+      ['Uit om te staan', 'Doe ze uit voor staande houdingen en voordat je op je tenen gaat knielen. Ze veranderen je balans.'],
+    ],
+    after: 'Heb je diabetes, een slechte doorbloeding, gevoelloze voeten of een pijnlijke knobbel bij je grote teen (hallux valgus)? Overleg dan eerst met je huisarts of een podotherapeut. Was ze af en toe in warm sop.',
   },
   {
     id: 'plan',
@@ -196,6 +212,7 @@ export const AREAS_NL = {
   hamstrings: 'Achterkant benen',
   quads: 'Voorkant dijen',
   calves: 'Kuiten & enkels',
+  feet: 'Voeten & tenen',
 };
 
 export const CARE_NL = {
@@ -204,6 +221,7 @@ export const CARE_NL = {
   neck: 'Nek',
   wrists: 'Polsen',
   shoulders: 'Schouders',
+  feet: 'Voeten & enkels',
 };
 
 export const POSITIONS_NL = {

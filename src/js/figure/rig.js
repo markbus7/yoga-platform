@@ -412,6 +412,8 @@ function placeProps(props, sol, top) {
       out.push({ t: 'wall', x, side, z: -12, bbox: { x0: x - 1, x1: x + 1, y0: 0, y1: 0 } });
     } else if (pr.t === 'strap') {
       out.push({ t: 'strap', from: pr.from, to: pr.to, z: pr.z ?? 33 });
+    } else if (pr.t === 'spreaders') {
+      out.push({ t: 'spreaders' });
     } else if (pr.t === 'chair') {
       const hip = sol.pts.hip;
       const seatY = hip[1] + 12;
@@ -547,6 +549,18 @@ export function shapesFor(fig, pose, glowKeys = []) {
     const d = capsulePath(T(s.a), T(s.b), s.r0 * S, s.r1 * S);
     shapes.push({ key: s.key, z: s.z, tag: 'path', cls: far(s.key) ? 'fg-far' : 'fg-body', attrs: { d } });
   }
+  // Toe spreaders: a band around the front of each foot.
+  fig.props.forEach((pr, i) => {
+    if (pr.t !== 'spreaders') return;
+    for (const s of sol.segs) {
+      if (!s.key.startsWith('foot')) continue;
+      const u = 0.56;
+      const a = [s.a[0] + (s.b[0] - s.a[0]) * u, s.a[1] + (s.b[1] - s.a[1]) * u];
+      const r0 = s.r0 + (s.r1 - s.r0) * u + 1.2;
+      const d = capsulePath(T(a), T(s.b), r0 * S, (s.r1 + 1.2) * S);
+      shapes.push({ key: `prop${i}-${s.key}`, z: s.z + 0.5, tag: 'path', cls: far(s.key) ? 'fg-spreader far' : 'fg-spreader', attrs: { d } });
+    }
+  });
   if (sol.torso) {
     shapes.push({ key: 'torso', z: 20, tag: 'path', cls: 'fg-body fg-torso', attrs: { d: polyPath(sol.torso.poly.map(T)), 'stroke-width': f(12 * S) } });
   }

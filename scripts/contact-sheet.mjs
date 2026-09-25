@@ -11,6 +11,7 @@ for (const [id, spec] of Object.entries(POSES)) {
   if (filter && !filter.test(id)) continue;
   const fig = prepareFigure(spec);
   const variants = [['final', figureSVG(spec, { mode: 'still' })]];
+  if (process.env.SPREADERS) variants.push(['spreaders', figureSVG({ ...spec, props: [...(spec.props || []), { t: 'spreaders' }] }, { mode: 'still', glow: false })]);
   if (spec.frames.length > 1) {
     const first = { ...spec, frames: [spec.frames[0]] };
     variants.unshift(['frame 1', figureSVG(first, { mode: 'still', glow: false })]);
@@ -33,6 +34,7 @@ svg.fig{width:100%;height:auto;display:block;background:#F7F8F6;border-radius:6p
 .fg-cushion{fill:#B9C7E8}.fg-wall{fill:#DCE2DC}.fg-chair{fill:#9AA6A0}
 .fg-strap{stroke:#FF6F3C;stroke-width:2.2;fill:none;stroke-linecap:round}
 .fg-glow{fill:#FF6F3C;opacity:.45}
+.fg-spreader{fill:#F4A06E;stroke:#D9804F;stroke-width:.6}.fg-spreader.far{opacity:.6}
 `;
 writeFileSync(out, `<!doctype html><meta charset="utf-8"><style>${css}</style><div class="grid">${cells.join('')}</div>`);
 console.log('wrote', out, cells.length, 'figures');

@@ -124,6 +124,7 @@ export const EN = {
   'prop.strap': 'Towel or strap',
   'prop.cushion': 'Cushion',
   'prop.chair': 'Chair',
+  'prop.spreaders': 'Toe spreaders',
 
   // routine
   'routine.dayOf': 'Day {day} of 30',
@@ -283,6 +284,8 @@ export const EN = {
   'you.noVoiceLang': 'No English voice was found on this device, so your browser picks one.',
   'you.chimes': 'Chimes',
   'you.chimesText': 'A soft bell when a pose starts, when to switch sides, and at the end.',
+  'you.spreaders': 'Toe spreaders',
+  'you.spreadersText': 'You have toe spreaders. Sessions remind you to put them in for the lying and seated holds.',
   'you.checkins': 'Check-ins',
   'you.checkinsText': 'Rate your tension before and after, to see what each session does for you.',
   'you.transition': 'Time between exercises',
@@ -370,6 +373,8 @@ export const EN = {
   'player.optional': '(optional)',
   'player.start': 'Start',
   'player.skipCheckin': 'Skip the check-in',
+  'player.spreadersTip': 'Keep your toe spreaders nearby. You will put them in for the lying and seated holds.',
+  'player.spreaders': 'Toe spreaders in',
   'player.end': 'End session',
   'player.sound': 'Sound',
   'player.soundOn': 'Sound on',
@@ -415,6 +420,7 @@ export const EN = {
   'say.next': 'Next: {text}',
   'say.switch': 'Switch sides. {side}.',
   'say.done': 'Well done. Take a moment to notice how your body feels.',
+  'say.spreaders': 'Put your toe spreaders in if you like.',
   'feel.calmer': 'Calmer',
   'feel.looser': 'Looser',
   'feel.lighter': 'Lighter',

@@ -46,6 +46,21 @@ export const GUIDE = [
     after: 'Using blocks is not cheating. A pose you can relax into works better than a deeper one you have to fight.',
   },
   {
+    id: 'spreaders',
+    title: 'Your toe spreaders',
+    body: [
+      'Toe spreaders gently fan your toes apart. Shoes squeeze them together all day, and the small muscles in your feet get stiff. Spreading them lets your feet relax and move better, and it feels good after a long day.',
+      'There is little research on them, so think of them as a comfortable extra, not a treatment.',
+    ],
+    list: [
+      ['When to wear them', 'During the lying and seated holds, or while you read or watch TV. Sessions remind you at the first hold where they fit, and the figure shows them on its feet.'],
+      ['How long', 'Start with 10 minutes. Add a few minutes each time, up to 20 or 30.'],
+      ['What you should feel', 'A mild stretch between your toes. Take them out if they pinch or hurt, or if your toes tingle or go numb.'],
+      ['Take them out to stand', 'Take them out before standing poses and kneeling on your toes. They change your balance.'],
+    ],
+    after: 'If you have diabetes, poor circulation, numb feet or a painful bunion, check with a doctor or podiatrist first. Wash them in warm, soapy water now and then.',
+  },
+  {
     id: 'plan',
     title: 'Your plan',
     body: [

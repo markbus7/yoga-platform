@@ -80,6 +80,17 @@ export const ROUTINES = [
     items: [['ragdoll', 45], ['calf', 40], ['quad', 35], ['halfsplit', 45], ['lyinghamstring', 60], ['seatedfold', 90], ['legsupwall', 120]],
   },
   {
+    id: 'feet',
+    feature: 'toesquat',
+    name: 'Happy Feet',
+    tagline: 'Toes, soles and ankles that spend all day in shoes',
+    when: 'any',
+    style: 'mix',
+    color: 'peach',
+    about: 'Wakes up stiff toes and ankles, stretches the soles and tops of your feet, then rests your legs up the wall with your toe spreaders in.',
+    items: [['toespread', 45], ['anklecircles', 30], ['calf', 40], ['toesquat', 40], ['topfoot', 60], ['legsupwall', 150]],
+  },
+  {
     id: 'upper',
     feature: 'fish',
     name: 'Upper Body Unwind',

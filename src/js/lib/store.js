@@ -10,7 +10,7 @@ const LOCAL_KEY = 'unstuck.v1';
 export function defaultState() {
   return {
     v: 1,
-    profile: { name: '', goal: 15, when: 'evening', care: [], blocks: 4, strap: false, wall: true, chair: true },
+    profile: { name: '', goal: 15, when: 'evening', care: [], blocks: 4, strap: false, wall: true, chair: true, spreaders: true },
     settings: { lang: '', hold: 1, voice: true, voices: { en: '', nl: '' }, rate: 1, chime: true, volume: 0.7, transition: 8, checkins: true },
     program: { startedAt: null, done: {} },
     sessions: [],

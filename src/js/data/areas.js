@@ -14,6 +14,7 @@ export const AREAS = [
   { id: 'hamstrings', name: 'Back of legs' },
   { id: 'quads', name: 'Front of thighs' },
   { id: 'calves', name: 'Calves & ankles' },
+  { id: 'feet', name: 'Feet & toes' },
 ];
 
 export const AREA_NAME = Object.fromEntries(AREAS.map((a) => [a.id, a.name]));
@@ -25,6 +26,7 @@ export const CARE_AREAS = [
   { id: 'neck', name: 'Neck' },
   { id: 'wrists', name: 'Wrists' },
   { id: 'shoulders', name: 'Shoulders' },
+  { id: 'feet', name: 'Feet & ankles' },
 ];
 
 export const POSITIONS = {

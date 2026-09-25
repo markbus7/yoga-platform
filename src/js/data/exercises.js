@@ -233,6 +233,46 @@ export const EXERCISES = [
     video: 'wrist flexor extensor stretch',
   },
   {
+    id: 'toespread',
+    anywhere: true,
+    name: 'Toe spreading',
+    kind: 'flow',
+    position: 'chair',
+    areas: ['feet'],
+    sec: 45,
+    summary: 'Lift your toes, fan them out as wide as you can, and set them down one by one.',
+    feel: 'The small muscles in your feet and the spaces between your toes waking up.',
+    setup: ['Sit on a chair or on your mat with your feet bare and flat on the floor.', 'Lift all ten toes and spread them as wide as they will go.', 'Set them down again, little toe first, keeping the gaps. Relax and repeat.'],
+    cues: ['Keep your heels and the balls of your feet on the floor.', 'Try to make a gap between every toe.', 'Now and then, lift only your big toes, then only the other four.', 'Small and slow is fine. Your feet will get better at it.'],
+    say: 'Toe spreading. Lift your toes, spread them wide, and set them down one by one.',
+    easier: 'Help your toes apart with your fingers, or just lift and lower them.',
+    deeper: 'Stand up and do it with your weight on your feet.',
+    careful: 'If your foot cramps, stop, rub it and try again more gently.',
+    care: [],
+    video: 'toe spreading exercise for feet',
+  },
+  {
+    id: 'anklecircles',
+    anywhere: true,
+    name: 'Ankle circles',
+    kind: 'flow',
+    position: 'chair',
+    areas: ['feet', 'calves'],
+    sec: 30,
+    sides: true,
+    sideLabels: ['Left foot', 'Right foot'],
+    summary: 'Lift one foot and draw big, slow circles with your toes.',
+    feel: 'All around your ankle, over the top of your foot and into your calf.',
+    setup: ['Sit on a chair and lift one foot a little off the floor.', 'Hold under your thigh if that is easier.', 'Draw big, slow circles with your toes. Change direction halfway.'],
+    cues: ['Make the circle as big as your ankle allows.', 'Move only your foot. Keep your knee still.', 'Point your toes away, then pull them back toward you as you go round.'],
+    say: 'Ankle circles. Lift one foot and draw big, slow circles with your toes. Change direction halfway.',
+    easier: 'Keep your heel on the floor and just point and flex your foot.',
+    deeper: 'Write the alphabet in the air with your big toe.',
+    careful: 'Keep it slow and smooth if your ankle clicks.',
+    care: [],
+    video: 'seated ankle circles mobility',
+  },
+  {
     id: 'chaircatcow',
     name: 'Seated cat–cow',
     kind: 'flow',
@@ -433,6 +473,47 @@ export const EXERCISES = [
     props: ['blocks'],
   },
   {
+    id: 'toesquat',
+    name: 'Kneeling toe stretch',
+    aka: 'Toe squat',
+    kind: 'hold',
+    position: 'kneeling',
+    areas: ['feet'],
+    sec: 40,
+    summary: 'Kneel with your toes tucked under and sit back toward your heels.',
+    feel: 'A strong stretch along the soles of your feet and under your toes.',
+    setup: ['Kneel on your mat with your knees and feet hip-width apart.', 'Tuck all your toes under, the little ones too.', 'Slowly sit back toward your heels and rest your hands on your thighs.'],
+    cues: ['This one is strong. Breathe slowly and stay at a 4 out of 10.', 'Check that your little toes are tucked under too.', 'Lean forward onto your hands to make it lighter.'],
+    say: 'Kneeling toe stretch. Tuck your toes under, and slowly sit back toward your heels.',
+    easier: 'Keep your hands on the floor or on blocks in front of you, so less weight rests on your heels. Start with 15 seconds.',
+    deeper: 'Sit your weight fully back on your heels and lift your hands.',
+    careful: 'Come out if you feel sharp pain or a cramp. Put a folded towel under your knees.',
+    care: ['knees', 'feet'],
+    video: 'toe squat yin yoga beginners',
+    exit: 'Lean forward onto your hands, untuck your toes and rest the tops of your feet down.',
+  },
+  {
+    id: 'topfoot',
+    name: 'Top-of-foot stretch',
+    aka: 'Hero pose on a block',
+    kind: 'hold',
+    position: 'kneeling',
+    areas: ['feet', 'quads'],
+    sec: 60,
+    summary: 'Sit back onto a block between your feet, with the tops of your feet flat on the mat.',
+    feel: 'Across the tops of your feet and the fronts of your ankles, sometimes into your thighs.',
+    setup: ['Kneel with your knees together and your feet a little wider than your hips.', 'Put a block between your feet, at its middle height.', 'Sit back onto the block with the tops of your feet flat on the mat.'],
+    cues: ['Let your weight sink down into the block.', 'Feel the tops of your feet getting longer.', 'Sit tall, hands on your thighs, and breathe slowly.'],
+    say: 'Top of foot stretch. Kneel, and sit back onto a block between your feet, with the tops of your feet flat.',
+    easier: 'Stand the block on its end to sit higher, or put a rolled towel under your ankles.',
+    deeper: 'Lower the block, or sit on your heels without one.',
+    careful: 'Stop if your knees hurt. More height under you takes the pressure off them.',
+    care: ['knees', 'feet'],
+    video: 'hero pose on a block for beginners',
+    props: ['blocks'],
+    exit: 'Lean forward onto your hands and stretch your legs back one at a time.',
+  },
+  {
     id: 'thread',
     name: 'Thread the needle',
     kind: 'hold',
@@ -599,6 +680,7 @@ export const EXERCISES = [
   },
   {
     id: 'twist',
+    spreaders: true,
     name: 'Lying twist',
     aka: 'Supta Matsyendrasana',
     kind: 'hold',
@@ -621,6 +703,7 @@ export const EXERCISES = [
   },
   {
     id: 'recbutterfly',
+    spreaders: true,
     name: 'Reclined butterfly',
     aka: 'Supta Baddha Konasana',
     kind: 'hold',
@@ -641,6 +724,7 @@ export const EXERCISES = [
   },
   {
     id: 'figurefour',
+    spreaders: true,
     name: 'Lying figure four',
     aka: 'Supta Kapotasana',
     kind: 'hold',
@@ -662,6 +746,7 @@ export const EXERCISES = [
   },
   {
     id: 'butterfly',
+    spreaders: true,
     name: 'Butterfly',
     aka: 'Baddha Konasana',
     kind: 'hold',
@@ -682,6 +767,7 @@ export const EXERCISES = [
   },
   {
     id: 'wideleg',
+    spreaders: true,
     name: 'Wide-leg fold',
     aka: 'Upavistha Konasana',
     kind: 'hold',
@@ -702,6 +788,7 @@ export const EXERCISES = [
   },
   {
     id: 'seatedfold',
+    spreaders: true,
     name: 'Seated fold',
     aka: 'Paschimottanasana',
     kind: 'hold',
@@ -765,6 +852,7 @@ export const EXERCISES = [
   },
   {
     id: 'legsupwall',
+    spreaders: true,
     name: 'Legs up the wall',
     aka: 'Viparita Karani',
     kind: 'hold',
@@ -786,6 +874,7 @@ export const EXERCISES = [
   },
   {
     id: 'fish',
+    spreaders: true,
     name: 'Chest opener on blocks',
     aka: 'Supported fish',
     kind: 'hold',
@@ -826,6 +915,7 @@ export const EXERCISES = [
   },
   {
     id: 'floormelt',
+    spreaders: true,
     name: 'Floor melt',
     aka: 'Savasana',
     kind: 'hold',
@@ -988,6 +1078,21 @@ for (const ex of EXERCISES) {
 }
 
 export const EXERCISE = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
+
+const spreaderFigs = new WeakMap();
+/**
+ * The figure to show for an exercise. Holds where your feet are free
+ * (`spreaders: true`) show toe spreaders when you have them.
+ */
+export function figureFor(ex, spreaders = false) {
+  if (!spreaders || !ex.spreaders) return ex.fig;
+  let spec = spreaderFigs.get(ex.fig);
+  if (!spec) {
+    spec = { ...ex.fig, props: [...(ex.fig.props || []), { t: 'spreaders' }] };
+    spreaderFigs.set(ex.fig, spec);
+  }
+  return spec;
+}
 
 export function videoSearchUrl(ex) {
   return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(ex.video || ex.name + ' stretch');

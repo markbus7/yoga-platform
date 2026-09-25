@@ -84,6 +84,7 @@ export function render(app) {
         <div class="switch-row"><div><div class="t">${t('you.voice')}</div><div class="d">${speechAvailable() ? t('you.voiceOn') : t('you.voiceNone')}</div></div>${sw('voice', settings.voice, t('you.voice'))}</div>
         ${voiceBlock(settings)}
         <div class="switch-row"><div><div class="t">${t('you.chimes')}</div><div class="d">${t('you.chimesText')}</div></div>${sw('chime', settings.chime, t('you.chimes'))}</div>
+        <div class="switch-row"><div><div class="t">${t('you.spreaders')}</div><div class="d">${t('you.spreadersText')}</div></div>${sw('spreaders', profile.spreaders, t('you.spreaders'))}</div>
         <div class="switch-row"><div><div class="t">${t('you.checkins')}</div><div class="d">${t('you.checkinsText')}</div></div>${sw('checkins', settings.checkins, t('you.checkins'))}</div>
         <div class="switch-row" style="display:block"><div class="t" style="margin-bottom:8px">${t('you.transition')}</div><div class="seg" role="group" aria-label="${t('you.transition')}">${TRANSITIONS.map(([v, k]) => html`<button data-act="transition" data-v="${v}" aria-pressed="${settings.transition === v}">${t(k)} · ${v}s</button>`)}</div></div>
       </div>
@@ -151,6 +152,11 @@ export const actions = {
       unlockAudio();
       chime('start', app.store.state.settings.volume);
     }
+  },
+  spreaders(app) {
+    set(app, (s) => {
+      s.profile.spreaders = !s.profile.spreaders;
+    });
   },
   checkins(app) {
     set(app, (s) => {

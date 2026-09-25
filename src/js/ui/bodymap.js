@@ -27,10 +27,13 @@ function geometry() {
   const chestR = shift(P.shoulderR, -5, 12);
   const waistL = shift(P.waist, -9, 0);
   const waistR = shift(P.waist, 9, 0);
+  // Feet: a generous blob around each ankle and foot so they are easy to tap.
+  const feet = cap(shift(P.ankleL, 0, 1), shift(P.toeL, -1, 1), 5.4) + cap(shift(P.ankleR, 0, 1), shift(P.toeR, 1, 1), 5.4);
   const front = [
     ['hips', cap(shift(P.hipL, -2, 4), shift(P.hipR, 2, 4), 9)],
     ['quads', cap(mid(P.hipL, P.kneeL, 0.2), P.kneeL, 7) + cap(mid(P.hipR, P.kneeR, 0.2), P.kneeR, 7)],
-    ['calves', cap(P.kneeL, P.ankleL, 5.2) + cap(P.kneeR, P.ankleR, 5.2)],
+    ['calves', cap(P.kneeL, mid(P.kneeL, P.ankleL, 0.9), 5.2) + cap(P.kneeR, mid(P.kneeR, P.ankleR, 0.9), 5.2)],
+    ['feet', feet],
     ['sides', cap(shift(waistL, -2, 0), shift(chestL, -6, 0), 4.5) + cap(shift(waistR, 2, 0), shift(chestR, 6, 0), 4.5)],
     ['chest', cap(chestL, chestR, 8.5)],
     ['arms', cap(P.elbowL, P.tipL, 5) + cap(P.elbowR, P.tipR, 5)],
@@ -40,7 +43,8 @@ function geometry() {
   const back = [
     ['glutes', cap(shift(P.hipL, -1, 5), shift(P.hipR, 1, 5), 10.5)],
     ['hamstrings', cap(mid(P.hipL, P.kneeL, 0.3), P.kneeL, 7) + cap(mid(P.hipR, P.kneeR, 0.3), P.kneeR, 7)],
-    ['calves', cap(P.kneeL, P.ankleL, 5.2) + cap(P.kneeR, P.ankleR, 5.2)],
+    ['calves', cap(P.kneeL, mid(P.kneeL, P.ankleL, 0.9), 5.2) + cap(P.kneeR, mid(P.kneeR, P.ankleR, 0.9), 5.2)],
+    ['feet', feet],
     ['lowerBack', cap(waistL, waistR, 8)],
     ['upperBack', cap(chestL, chestR, 9)],
     ['shoulders', circlePath(P.shoulderL, 7.5) + circlePath(P.shoulderR, 7.5)],

@@ -8,6 +8,7 @@ import { esc } from './ui/dom.js';
 import { chime, speak, stopSpeaking, unlockAudio, keepAwake } from './lib/audio.js';
 import { fmtClock, dayKey } from './lib/dates.js';
 import { AREAS } from './data/areas.js';
+import { figureFor } from './data/exercises.js';
 import { streak } from './lib/stats.js';
 import { newId } from './lib/store.js';
 import { t, lang } from './i18n.js';
@@ -33,6 +34,9 @@ class Player {
     this.planned = timelineSeconds(this.steps);
     this.poseSteps = this.steps.map((st, i) => (st.type === 'pose' ? i : -1)).filter((i) => i >= 0);
     this.exCount = this.steps.filter((st) => st.type === 'move').length;
+    // Toe spreaders: remind once, as you set up the first hold where your feet are free.
+    this.spreaders = !!app.store.state.profile.spreaders;
+    this.spreaderStep = this.spreaders ? this.steps.findIndex((st) => st.type === 'move' && st.ex.spreaders) : -1;
     this.i = 0;
     this.elapsed = 0;
     this.active = 0;
@@ -79,6 +83,7 @@ class Player {
           <div class="scale" role="group" aria-label="${esc(t('player.tensionAria'))}">${scaleButtons(this.before, 'before')}</div>
           <div class="scale-ends"><span>${esc(t('player.loose'))}</span><span>${esc(t('player.locked'))}</span></div>
         </div>
+        ${this.spreaderStep >= 0 ? `<p class="gear-note">${icon('foot')}<span>${esc(t('player.spreadersTip'))}</span></p>` : ''}
         <p class="small" style="opacity:.85">${esc(t('player.whereStuck'))} <span style="opacity:.75">${esc(t('player.optional'))}</span></p>
         <div class="chips" style="justify-content:center">${areas}</div>
         <button class="btn btn-lg btn-wide" data-p="begin">${icon('play')} ${esc(t('player.start'))}</button>
@@ -117,6 +122,7 @@ class Player {
         <div class="player-info">
           <span class="kicker" data-r="kicker"></span>
           <span class="side" data-r="side" hidden></span>
+          <span class="gear" data-r="gear" hidden>${icon('foot')}<span>${esc(t('player.spreaders'))}</span></span>
           <h2 data-r="name" aria-live="polite"></h2>
           <div class="clock" data-r="clock" aria-hidden="true"></div>
           <p class="cue" data-r="cue"></p>
@@ -167,13 +173,15 @@ class Player {
     const mirror = (st.type === 'pose' && st.side === 1) || st.type === 'switch';
     const mode = st.type === 'pose' ? 'hold' : 'enter';
     const enterSec = Math.max(2, Math.min(st.sec - 1.5, 4));
-    if (!this.figure) this.figure = mountFigure(this.r.fig, ex.fig, { mode, mirror, enterSec, label: ex.name });
-    else if (this.figSpec !== ex.fig) this.figure.setSpec(ex.fig, { mode, mirror, enterSec });
+    const spec = figureFor(ex, this.spreaders);
+    if (!this.figure) this.figure = mountFigure(this.r.fig, spec, { mode, mirror, enterSec, label: ex.name });
+    else if (this.figSpec !== spec) this.figure.setSpec(spec, { mode, mirror, enterSec });
     else {
       this.figure.setMirror(mirror);
       this.figure.setMode(mode, { enterSec, restart: st.type !== 'pose' || ex.kind === 'hold' });
     }
-    this.figSpec = ex.fig;
+    this.figSpec = spec;
+    this.r.gear.hidden = !(this.spreaderStep >= 0 && index === this.spreaderStep);
     if (this.paused) this.figure.pause();
 
     // segments
@@ -187,7 +195,8 @@ class Player {
     if (!quiet && this.sound) {
       if (st.type === 'move') {
         if (this.chimes) chime('next', this.app.store.state.settings.volume);
-        if (this.voice) speak(t(st.first ? 'say.first' : 'say.next', { text: ex.say }), this.voiceOpts());
+        const gear = index === this.spreaderStep ? ' ' + t('say.spreaders') : '';
+        if (this.voice) speak(t(st.first ? 'say.first' : 'say.next', { text: ex.say }) + gear, this.voiceOpts());
       } else if (st.type === 'switch') {
         if (this.chimes) chime('switch', this.app.store.state.settings.volume);
         if (this.voice) speak(t('say.switch', { side: ex.sideLabels[1] }), this.voiceOpts());

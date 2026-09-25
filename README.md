@@ -4,8 +4,9 @@ A daily stretching, gravity-hold and breathing coach for a body that feels stuck
 
 - **Guided sessions** with an animated figure for every exercise, spoken cues, soft chimes, and a screen that stays on while you practise.
 - **Unstuck 30**, a four-week plan: short sessions in week one, holds that slowly get longer after that.
-- **12 routines**: Wake-up Unstick, Gravity Release, Desk Reset, Neck & Shoulders, Hips & Lower Back, Legs & Hamstrings, Upper Body Unwind, Deep Hip Release, Wind Down, Full Body Deep, Gravity Basics and Just Breathe.
-- **48 exercises** with plain-English names (the yoga name in small print), step-by-step setup, what you should feel and where, easier and deeper options, and when to be careful.
+- **13 routines**: Wake-up Unstick, Gravity Release, Desk Reset, Neck & Shoulders, Hips & Lower Back, Legs & Hamstrings, Happy Feet, Upper Body Unwind, Deep Hip Release, Wind Down, Full Body Deep, Gravity Basics and Just Breathe.
+- **52 exercises** with plain-English names (the yoga name in small print), step-by-step setup, what you should feel and where, easier and deeper options, and when to be careful.
+- **Toe spreaders**: holds where your feet are free (legs up the wall, butterfly, floor melt and others) remind you to put your toe spreaders in, and the figure wears them. Switch it off under **You** if you do not have any.
 - **Build a session**: tap where you feel stuck on a body map, pick 5 to 20 minutes, and get a session for exactly those spots.
 - **Progress**: streaks, a practice calendar, minutes per week, tension before and after each session, a five-test flexibility check every two weeks, and milestones.
 - **Video classes**: free beginner follow-alongs on YouTube, in English and in Dutch, that you can log as practice.

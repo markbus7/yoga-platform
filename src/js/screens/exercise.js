@@ -3,7 +3,7 @@
 import { html, raw } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { mountFigure } from '../ui/figure-view.js';
-import { EXERCISE, videoSearchUrl } from '../data/exercises.js';
+import { EXERCISE, videoSearchUrl, figureFor } from '../data/exercises.js';
 import { ROUTINES } from '../data/routines.js';
 import { AREA_NAME, POSITIONS, CARE_AREAS } from '../data/areas.js';
 import { topBar, kindTag, itemTime } from './common.js';
@@ -30,7 +30,7 @@ export function render(app, route) {
         <div class="ex-head">
           <h1 class="display" tabindex="-1">${ex.name}</h1>
           ${ex.aka ? html`<p class="aka">${t('ex.yogaName', { aka: ex.aka })}</p>` : ''}
-          <div class="row wrap" style="--gap:6px">${kindTag(ex)}<span class="tag">${raw(icon('clock'))}${itemTime(app, ex.id, ex.sec)}</span><span class="tag">${POSITIONS[ex.position]}</span>${ex.props.map((p) => html`<span class="tag">${t('prop.' + p)}</span>`)}</div>
+          <div class="row wrap" style="--gap:6px">${kindTag(ex)}<span class="tag">${raw(icon('clock'))}${itemTime(app, ex.id, ex.sec)}</span><span class="tag">${POSITIONS[ex.position]}</span>${ex.props.map((p) => html`<span class="tag">${t('prop.' + p)}</span>`)}${ex.spreaders && app.store.state.profile.spreaders ? html`<span class="tag spreader">${raw(icon('foot'))}${t('prop.spreaders')}</span>` : ''}</div>
         </div>
         <p class="lede">${ex.summary}</p>
         <div class="stack" style="--gap:6px">
@@ -67,7 +67,7 @@ export function render(app, route) {
 export function mount(app, root, route) {
   const ex = EXERCISE[route.arg];
   const host = root.querySelector('[data-ex-fig]');
-  if (ex && host) app.ui.detailFig = mountFigure(host, ex.fig, { mode: 'preview', label: ex.name });
+  if (ex && host) app.ui.detailFig = mountFigure(host, figureFor(ex, app.store.state.profile.spreaders), { mode: 'preview', label: ex.name });
 }
 
 export const actions = {

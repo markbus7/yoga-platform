@@ -123,6 +123,7 @@ export const NL = {
   'prop.strap': 'Handdoek of riem',
   'prop.cushion': 'Kussen',
   'prop.chair': 'Stoel',
+  'prop.spreaders': 'Teen\u00ADspreiders',
 
   // routine
   'routine.dayOf': 'Dag {day} van 30',
@@ -282,6 +283,8 @@ export const NL = {
   'you.noVoiceLang': 'Er is geen Nederlandse stem gevonden op dit apparaat, dus je browser kiest er een. Een Nederlandse stem voeg je toe in de taalinstellingen van je telefoon of computer.',
   'you.chimes': 'Belletjes',
   'you.chimesText': 'Een zacht belletje als een houding begint, als je van kant wisselt en aan het eind.',
+  'you.spreaders': 'Teen\u00ADspreiders',
+  'you.spreadersText': 'Je hebt teenspreiders. Tijdens een sessie krijg je een seintje om ze in te doen bij de liggende en zittende houdingen.',
   'you.checkins': 'Check-ins',
   'you.checkinsText': 'Geef voor en na aan hoe gespannen je bent, zodat je ziet wat elke sessie doet.',
   'you.transition': 'Tijd tussen oefeningen',
@@ -369,6 +372,8 @@ export const NL = {
   'player.optional': '(niet verplicht)',
   'player.start': 'Start',
   'player.skipCheckin': 'Check-in overslaan',
+  'player.spreadersTip': 'Leg je teenspreiders klaar. Je doet ze in bij de liggende en zittende houdingen.',
+  'player.spreaders': 'Teen\u00ADspreiders in',
   'player.end': 'Sessie beëindigen',
   'player.sound': 'Geluid',
   'player.soundOn': 'Geluid aan',
@@ -414,6 +419,7 @@ export const NL = {
   'say.next': 'Hierna: {text}',
   'say.switch': 'Wissel van kant. {side}.',
   'say.done': 'Goed gedaan. Neem even de tijd om te voelen hoe je lichaam nu voelt.',
+  'say.spreaders': 'Doe je teenspreiders in als je wilt.',
   'feel.calmer': 'Rustiger',
   'feel.looser': 'Losser',
   'feel.lighter': 'Lichter',

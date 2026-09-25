@@ -136,6 +136,23 @@ export const POSES = {
   },
 
   // ---------- all fours & kneeling ----------
+  toesquat: {
+    groundOn: ['kneeN', 'kneeF', 'toeN', 'toeF'], anchor: 'kneeN', beat: 3,
+    frames: [
+      { lumbar: -90, thorax: -91, neck: -93, head: -92, thighN: 88, shinN: 190, footN: 100, thighF: 89, shinF: 191, footF: 101, uarmN: 92, farmN: 90, handN: 90, uarmF: 90, farmF: 88, handF: 88 },
+      { lumbar: -88, thorax: -91, neck: -94, head: -94, thighN: 22, shinN: 198, footN: 106, thighF: 23, shinF: 199, footF: 107, uarmN: 84, farmN: 45, handN: 20, uarmF: 82, farmF: 43, handF: 18 },
+    ],
+    glow: ['footN', 'footF'],
+  },
+  topfoot: {
+    anchor: 'kneeN', beat: 3,
+    frames: [
+      { lumbar: -90, thorax: -91, neck: -93, head: -92, thighN: 88, shinN: 180, footN: 180, thighF: 89, shinF: 181, footF: 181, uarmN: 92, farmN: 90, handN: 90, uarmF: 90, farmF: 88, handF: 88 },
+      { lumbar: -88, thorax: -91, neck: -94, head: -94, thighN: 35, shinN: 178, footN: 176, thighF: 36, shinF: 179, footF: 177, uarmN: 86, farmN: 55, handN: 30, uarmF: 84, farmF: 53, handF: 28 },
+    ],
+    props: [{ t: 'block', under: 'hip', w: 23 }],
+    glow: ['footN', 'footF'],
+  },
   catcow: {
     flow: true, pingpong: true, beat: 2.8, pause: 0.5,
     anchor: 'kneeN',
@@ -508,5 +525,27 @@ export const POSES = {
     ],
     props: [{ t: 'chair' }],
     glow: ['thighR', 'hip'],
+  },
+  toespread: {
+    flow: true, pingpong: true, beat: 1.4, pause: 0.6,
+    groundOn: ['ankleN', 'ankleF'], anchor: 'hip',
+    frames: [
+      { ...CHAIR_SIDE, lumbar: -86, thorax: -94, neck: -80, head: -60, shinN: 86, footN: 3, shinF: 88, footF: 3 },
+      { ...CHAIR_SIDE, lumbar: -86, thorax: -94, neck: -80, head: -60, shinN: 86, footN: -24, shinF: 88, footF: -24 },
+    ],
+    props: [{ t: 'chair' }],
+    glow: ['footN', 'footF'],
+  },
+  anklecircles: {
+    flow: true, beat: 0.9, pause: 0, still: 1,
+    groundOn: ['ankleF', 'toeF'], anchor: 'hip',
+    frames: [
+      { ...CHAIR_SIDE, thighN: -14, shinN: 62, footN: -52, uarmN: 84, farmN: 18, handN: 12 },
+      { ...CHAIR_SIDE, thighN: -14, shinN: 62, footN: -10, uarmN: 84, farmN: 18, handN: 12 },
+      { ...CHAIR_SIDE, thighN: -14, shinN: 62, footN: 38, uarmN: 84, farmN: 18, handN: 12 },
+      { ...CHAIR_SIDE, thighN: -14, shinN: 62, footN: -10, uarmN: 84, farmN: 18, handN: 12 },
+    ],
+    props: [{ t: 'chair' }],
+    glow: ['footN', 'shinN'],
   },
 };
