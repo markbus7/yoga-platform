@@ -1,0 +1,20 @@
+{
+  "name": "unstuck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unstuck: a daily full-body stretch, gravity-hold and breathing coach with guided sessions and progress tracking.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "poses": "node scripts/contact-sheet.mjs dist/poses.html",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "preview": "npm run build && node scripts/serve.mjs dist"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
