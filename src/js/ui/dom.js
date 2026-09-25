@@ -37,11 +37,6 @@ export function html(strings, ...vals) {
 export const qs = (sel, root = document) => root.querySelector(sel);
 export const qsa = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-/** Plural helper: n('day', 3) -> "3 days" */
-export function n(word, count, plural = word + 's') {
-  return `${count} ${count === 1 ? word : plural}`;
-}
-
 let toastTimer = 0;
 export function toast(message) {
   let el = document.getElementById('toast');

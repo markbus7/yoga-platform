@@ -203,6 +203,9 @@ button { cursor: pointer; }
 a { color: var(--mat-text); }
 h1, h2, h3 { margin: 0; text-wrap: balance; }
 p { margin: 0; }
+/* Dutch compounds are long: let titles and labels hyphenate, and never let a word overflow. */
+body { overflow-wrap: break-word; }
+:lang(nl) :is(h1, h2, h3, .n, .t, .tag, .chip, .seg button, .kicker, .eyebrow, .label, .kpi .label) { -webkit-hyphens: auto; hyphens: auto; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .muted { color: var(--ink-2); }
@@ -382,7 +385,7 @@ h2.section-title {
   background: var(--bg-sunk);
 }
 .seg button {
-  min-height: 40px;
+  min-height: 40px; padding: 0 4px;
   border: 0; border-radius: 999px;
   background: transparent; color: var(--ink-2);
   font-weight: 700; font-size: 14px;
@@ -453,6 +456,27 @@ textarea.input { min-height: 88px; resize: vertical; }
 }
 .streak svg { width: 22px; height: 22px; color: var(--glow); }
 .streak.cold svg { color: var(--ink-3); }
+.lang-pill {
+  display: inline-flex; gap: 2px; padding: 3px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-soft);
+}
+.lang-pill button {
+  min-width: 34px; min-height: 36px; padding: 0 6px;
+  border: 0; border-radius: 999px;
+  background: transparent; color: var(--ink-2);
+  font-weight: 800; font-size: 12px; letter-spacing: 0.06em;
+}
+.top .row { flex: none; }
+.streak { white-space: nowrap; }
+/* Narrow phones: the language switch comes first; the streak chip appears once there is a streak. */
+@media (max-width: 459px) { .streak.cold { display: none; } }
+@media (max-width: 379px) {
+  .top .wordmark { font-size: 22px; }
+  .streak .unit { display: none; }
+}
+.lang-pill button[aria-pressed='true'] { background: var(--mat); color: var(--mat-ink); }
 .greet { margin-top: 18px; display: flex; flex-direction: column; gap: 6px; }
 
 /* ---------- routine colors ---------- */
@@ -499,6 +523,7 @@ textarea.input { min-height: 88px; resize: vertical; }
 .hero-body { padding: 6px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
 .hero .eyebrow { color: inherit; opacity: 0.8; }
 .hero h2 { font-family: var(--font-display); font-weight: 800; font-stretch: 116%; font-size: clamp(28px, 7vw, 38px); line-height: 1; letter-spacing: -0.015em; }
+.hero h2.long { font-size: clamp(24px, 6vw, 34px); }
 .hero .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-weight: 600; font-size: 15px; opacity: 0.92; }
 .hero .meta span { display: inline-flex; align-items: center; gap: 5px; }
 .hero .meta svg { width: 17px; height: 17px; }
@@ -619,10 +644,10 @@ svg.fig { display: block; }
 @media (min-width: 900px) { .bar { margin: -32px -32px 8px; padding: 16px 32px; } }
 
 /* ---------- explore ---------- */
-.routine-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
-@media (min-width: 640px) { .routine-list { grid-template-columns: 1fr 1fr; } }
+.routine-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 640px) { .routine-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .routine-card {
-  display: grid; grid-template-columns: 1fr 112px; gap: 8px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 8px;
   min-height: 132px;
   padding: 16px 12px 14px 18px;
   border: 0; border-radius: var(--radius-m);
@@ -658,6 +683,7 @@ svg.fig { display: block; }
 .video-card .who { font-size: 14px; color: var(--ink-2); font-weight: 600; }
 .video-card .why { font-size: 15px; color: var(--ink-2); }
 .video-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.video-group { margin: 26px 0 12px; }
 @media (min-width: 720px) { .video-list { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- exercise detail ---------- */
@@ -689,6 +715,7 @@ svg.fig { display: block; }
 /* ---------- routine detail ---------- */
 .band { border-radius: var(--radius-l); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
 .band h1 { font-family: var(--font-display); font-weight: 800; font-stretch: 116%; font-size: clamp(30px, 8vw, 44px); line-height: 1; }
+.band h1.long { font-size: clamp(25px, 6.4vw, 40px); }
 .band .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-weight: 700; font-size: 15px; }
 .band .meta span { display: inline-flex; align-items: center; gap: 6px; }
 .band .meta svg { width: 18px; height: 18px; }
@@ -819,7 +846,7 @@ details.table-view th { color: var(--ink-2); font-weight: 700; font-size: 13px; 
 /* badges */
 .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
 .badge {
-  display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: center;
+  display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: center;
   padding: 10px 12px;
   border-radius: var(--radius-s);
   background: var(--surface);
@@ -828,7 +855,7 @@ details.table-view th { color: var(--ink-2); font-weight: 700; font-size: 13px; 
 .badge .b { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 9px; background: var(--cork); color: #3a2410; }
 .badge .b svg { width: 22px; height: 22px; }
 .badge .n { font-weight: 800; font-size: 14px; line-height: 1.2; }
-.badge .d { font-size: 12px; color: var(--ink-2); line-height: 1.3; }
+.badge .d { display: block; font-size: 12px; color: var(--ink-2); line-height: 1.3; }
 .badge.locked { opacity: 0.55; }
 .badge.locked .b { background: var(--bg-sunk); color: var(--ink-3); }
 

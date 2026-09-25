@@ -11,7 +11,7 @@ export function defaultState() {
   return {
     v: 1,
     profile: { name: '', goal: 15, when: 'evening', care: [], blocks: 4, strap: false, wall: true, chair: true },
-    settings: { hold: 1, voice: true, voiceURI: '', rate: 1, chime: true, volume: 0.7, transition: 8, checkins: true },
+    settings: { lang: '', hold: 1, voice: true, voices: { en: '', nl: '' }, rate: 1, chime: true, volume: 0.7, transition: 8, checkins: true },
     program: { startedAt: null, done: {} },
     sessions: [],
     tests: [],
@@ -25,10 +25,15 @@ export function normalize(input) {
   const d = defaultState();
   const s = input && typeof input === 'object' ? input : {};
   const arr = (v) => (Array.isArray(v) ? v : []);
+  const settings = { ...d.settings, ...(s.settings || {}) };
+  // Older saves kept one English voice in `voiceURI`.
+  settings.voices = { ...d.settings.voices, ...(settings.voices || {}) };
+  if (settings.voiceURI && !settings.voices.en) settings.voices.en = settings.voiceURI;
+  delete settings.voiceURI;
   return {
     v: 1,
     profile: { ...d.profile, ...(s.profile || {}) },
-    settings: { ...d.settings, ...(s.settings || {}) },
+    settings,
     program: { ...d.program, ...(s.program || {}), done: { ...((s.program && s.program.done) || {}) } },
     sessions: arr(s.sessions).filter((x) => x && x.id && x.day),
     tests: arr(s.tests).filter((x) => x && x.id && x.results),

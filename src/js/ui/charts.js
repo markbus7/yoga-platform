@@ -2,7 +2,8 @@
 // carries its value in a tooltip; every chart also has a table view.
 
 import { esc } from './dom.js';
-import { fmtDay, addDays, weekStart, parseDay } from '../lib/dates.js';
+import { fmtDay, addDays, weekStart, parseDay, monthShort } from '../lib/dates.js';
+import { t } from '../i18n.js';
 
 function niceMax(v, steps = [10, 20, 30, 60, 90, 120, 180, 240, 300, 420, 600, 900, 1200]) {
   for (const s of steps) if (v <= s) return s;
@@ -13,7 +14,7 @@ const tipAttrs = (value, label) => `data-tip-v="${esc(value)}" data-tip="${esc(l
 
 function tableView(caption, head, rows) {
   if (!rows.length) return '';
-  return `<details class="table-view"><summary>Show as a table</summary><table><caption class="sr">${esc(caption)}</caption><thead><tr>${head.map((h) => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`;
+  return `<details class="table-view"><summary>${esc(t('chart.table'))}</summary><table><caption class="sr">${esc(caption)}</caption><thead><tr>${head.map((h) => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`;
 }
 
 /** Minutes per week, oldest first. */
@@ -29,13 +30,13 @@ export function weeklyChart(weeks) {
     .map((w, i) => {
       const h = (w.minutes / max) * 100;
       const cap = (i === last || i === peakIdx) && w.minutes > 0 ? `<span class="cap" style="bottom:${h}%">${w.minutes}</span>` : '';
-      const label = `Week of ${fmtDay(w.week)}`;
-      return `<button class="col${i === last ? ' current' : ''}" ${tipAttrs(`${w.minutes} min`, label)} aria-label="${esc(label)}: ${w.minutes} minutes">${cap}<span class="bar-fill" style="height:${h}%"></span></button>`;
+      const label = t('chart.weekOf', { date: fmtDay(w.week) });
+      return `<button class="col${i === last ? ' current' : ''}" ${tipAttrs(t('chart.min', { n: w.minutes }), label)} aria-label="${esc(label)}: ${esc(t('chart.minutesLong', { n: w.minutes }))}">${cap}<span class="bar-fill" style="height:${h}%"></span></button>`;
     })
     .join('');
   // Label every other week so the dates never collide on a phone.
-  const labels = weeks.map((w, i) => `<span>${i === last ? 'This week' : (last - i) % 2 === 0 ? fmtDay(w.week) : ''}</span>`).join('');
-  return `<div class="cols" role="group" aria-label="Minutes practised per week">${grid}${cols}</div><div class="col-labels" aria-hidden="true">${labels}</div>${tableView('Minutes per week', ['Week of', 'Minutes'], weeks.map((w) => [fmtDay(w.week), w.minutes]))}`;
+  const labels = weeks.map((w, i) => `<span>${i === last ? esc(t('chart.thisWeek')) : (last - i) % 2 === 0 ? fmtDay(w.week) : ''}</span>`).join('');
+  return `<div class="cols" role="group" aria-label="${esc(t('chart.minutesAria'))}">${grid}${cols}</div><div class="col-labels" aria-hidden="true">${labels}</div>${tableView(t('weekly.title'), [t('chart.colWeek'), t('chart.colMinutes')], weeks.map((w) => [fmtDay(w.week), w.minutes]))}`;
 }
 
 /** Before -> after tension per session (1 = loose, 10 = locked up). */
@@ -49,16 +50,16 @@ export function tensionChart(rows) {
       const x = step * (i + 0.5);
       const top = Math.min(y(r.before), y(r.after));
       const h = Math.abs(y(r.before) - y(r.after));
-      const label = `${fmtDay(r.day, { weekday: true })} · ${r.title || 'Session'}`;
-      return `<button class="db" style="left:${x}%" ${tipAttrs(`${r.before} → ${r.after}`, label)} aria-label="${esc(label)}: tension ${r.before} before, ${r.after} after"><span class="stem" style="top:${top}%;height:${h}%"></span><span class="dot before" style="top:${y(r.before)}%"></span><span class="dot after" style="top:${y(r.after)}%"></span></button>`;
+      const label = `${fmtDay(r.day, { weekday: true })} · ${r.title || t('chart.colSession')}`;
+      return `<button class="db" style="left:${x}%" ${tipAttrs(`${r.before} → ${r.after}`, label)} aria-label="${esc(t('chart.tensionLabel', { label, before: r.before, after: r.after }))}"><span class="stem" style="top:${top}%;height:${h}%"></span><span class="dot before" style="top:${y(r.before)}%"></span><span class="dot after" style="top:${y(r.after)}%"></span></button>`;
     })
     .join('');
   const first = recent[0];
   const lastR = recent[recent.length - 1];
-  return `<div class="legend"><span><i style="background:var(--c1)"></i>Before</span><span><i style="background:var(--c3)"></i>After</span></div>
-    <div class="dumb" role="group" aria-label="Tension before and after each session">${grid}${marks}</div>
+  return `<div class="legend"><span><i style="background:var(--c1)"></i>${esc(t('chart.before'))}</span><span><i style="background:var(--c3)"></i>${esc(t('chart.after'))}</span></div>
+    <div class="dumb" role="group" aria-label="${esc(t('chart.tensionAria'))}">${grid}${marks}</div>
     <div class="dumb-x" aria-hidden="true"><span>${fmtDay(first.day)}</span><span>${fmtDay(lastR.day)}</span></div>
-    ${tableView('Tension before and after', ['Day', 'Session', 'Before', 'After'], recent.map((r) => [fmtDay(r.day, { weekday: true }), r.title || '', r.before, r.after]))}`;
+    ${tableView(t('tension.title'), [t('chart.colDay'), t('chart.colSession'), t('chart.before'), t('chart.after')], recent.map((r) => [fmtDay(r.day, { weekday: true }), r.title || '', r.before, r.after]))}`;
 }
 
 function level(min) {
@@ -78,7 +79,7 @@ export function heatmap(minutesByDay, today, weeks = 16) {
   for (let w = 0; w < weeks; w++) {
     const ws = addDays(start, 7 * w);
     const m = parseDay(ws).getMonth();
-    const label = m !== prevMonth ? parseDay(ws).toLocaleString('en', { month: 'short' }) : '';
+    const label = m !== prevMonth ? monthShort(ws) : '';
     prevMonth = m;
     cells += `<span class="ml">${label}</span>`;
     for (let d = 0; d < 7; d++) {
@@ -89,41 +90,41 @@ export function heatmap(minutesByDay, today, weeks = 16) {
       const cls = `heat-cell${future ? ' future' : ` l${level(min)}`}${key === today ? ' today' : ''}`;
       cells += future
         ? `<span class="${cls}" aria-hidden="true"></span>`
-        : `<button class="${cls}" ${tipAttrs(min ? `${min} min` : 'Rest day', fmtDay(key, { weekday: true }))} aria-label="${fmtDay(key, { weekday: true })}: ${min ? min + ' minutes' : 'no practice'}"></button>`;
+        : `<button class="${cls}" ${tipAttrs(min ? t('chart.min', { n: min }) : t('chart.rest'), fmtDay(key, { weekday: true }))} aria-label="${fmtDay(key, { weekday: true })}: ${esc(min ? t('chart.minutesLong', { n: min }) : t('chart.noPractice'))}"></button>`;
     }
   }
-  const scale = `<div class="heat-scale" aria-hidden="true">Less <span class="heat-cell"></span><span class="heat-cell l1"></span><span class="heat-cell l2"></span><span class="heat-cell l3"></span><span class="heat-cell l4"></span> More</div>`;
-  return `<div class="heat-wrap"><div class="heat" role="group" aria-label="Practice calendar">${cells}</div></div>${scale}${tableView('Days practised', ['Day', 'Minutes'], practised.reverse())}`;
+  const scale = `<div class="heat-scale" aria-hidden="true">${esc(t('chart.less'))} <span class="heat-cell"></span><span class="heat-cell l1"></span><span class="heat-cell l2"></span><span class="heat-cell l3"></span><span class="heat-cell l4"></span> ${esc(t('chart.more'))}</div>`;
+  return `<div class="heat-wrap"><div class="heat" role="group" aria-label="${esc(t('chart.calendarAria'))}">${cells}</div></div>${scale}${tableView(t('chart.daysPractised'), [t('chart.colDay'), t('chart.colMinutes')], practised.reverse())}`;
 }
 
 /** First vs latest level on each flexibility test. */
 export function flexChart(tests, progress) {
   const rows = tests
-    .map((t) => {
-      const p = progress[t.id];
+    .map((test) => {
+      const p = progress[test.id];
       if (!p) return '';
-      const max = t.levels.length - 1;
+      const max = test.levels.length - 1;
       const x = (lv) => (lv / max) * 100;
-      const ticks = t.levels.map((_, i) => `<span class="tick" style="left:${x(i)}%"></span>`).join('');
+      const ticks = test.levels.map((_, i) => `<span class="tick" style="left:${x(i)}%"></span>`).join('');
       const lo = Math.min(p.first, p.latest);
       const hi = Math.max(p.first, p.latest);
-      const chg = p.change > 0 ? `+${p.change} ${p.change === 1 ? 'level' : 'levels'}` : p.change < 0 ? `${p.change} ${p.change === -1 ? 'level' : 'levels'}` : p.history.length > 1 ? 'No change yet' : 'Baseline';
+      const chg = p.change > 0 ? t('chart.levelsUp', { n: p.change }) : p.change < 0 ? t('chart.levelsDown', { n: -p.change }) : p.history.length > 1 ? t('chart.noChange') : t('chart.baseline');
       return `<div class="level-row">
-        <div class="top-line"><span class="n">${esc(t.name)}</span><span class="chg${p.change > 0 ? ' up' : ''}">${chg}</span></div>
+        <div class="top-line"><span class="n">${esc(test.name)}</span><span class="chg${p.change > 0 ? ' up' : ''}">${esc(chg)}</span></div>
         <div class="track"><span class="rail"></span>${ticks}<span class="span" style="left:${x(lo)}%;width:${x(hi) - x(lo)}%"></span>
-          ${p.history.length > 1 ? `<button class="pt first" style="left:${x(p.first)}%" ${tipAttrs(t.levels[p.first], 'First check')} aria-label="First check: ${esc(t.levels[p.first])}"></button>` : ''}
-          <button class="pt latest" style="left:${x(p.latest)}%" ${tipAttrs(t.levels[p.latest], 'Latest check')} aria-label="Latest check: ${esc(t.levels[p.latest])}"></button>
+          ${p.history.length > 1 ? `<button class="pt first" style="left:${x(p.first)}%" ${tipAttrs(test.levels[p.first], t('chart.firstCheck'))} aria-label="${esc(t('chart.firstCheck'))}: ${esc(test.levels[p.first])}"></button>` : ''}
+          <button class="pt latest" style="left:${x(p.latest)}%" ${tipAttrs(test.levels[p.latest], t('chart.latestCheck'))} aria-label="${esc(t('chart.latestCheck'))}: ${esc(test.levels[p.latest])}"></button>
         </div>
-        <div class="track-ends"><span>${esc(t.levels[0])}</span><span>${esc(t.levels[max])}</span></div>
+        <div class="track-ends"><span>${esc(test.levels[0])}</span><span>${esc(test.levels[max])}</span></div>
       </div>`;
     })
     .join('');
   const table = tableView(
-    'Flexibility check results',
-    ['Test', 'First', 'Latest'],
-    tests.filter((t) => progress[t.id]).map((t) => [t.name, t.levels[progress[t.id].first], t.levels[progress[t.id].latest]]),
+    t('chart.flexCaption'),
+    [t('chart.colTest'), t('chart.colFirst'), t('chart.colLatest')],
+    tests.filter((test) => progress[test.id]).map((test) => [test.name, test.levels[progress[test.id].first], test.levels[progress[test.id].latest]]),
   );
-  return `<div class="legend"><span><i style="background:var(--surface);box-shadow:inset 0 0 0 2.5px var(--c1)"></i>First check</span><span><i style="background:var(--c3)"></i>Latest</span></div><div class="levels">${rows}</div>${table}`;
+  return `<div class="legend"><span><i style="background:var(--surface);box-shadow:inset 0 0 0 2.5px var(--c1)"></i>${esc(t('chart.firstCheck'))}</span><span><i style="background:var(--c3)"></i>${esc(t('chart.latest'))}</span></div><div class="levels">${rows}</div>${table}`;
 }
 
 /** Horizontal bars of minutes per body area. */
@@ -132,7 +133,7 @@ export function areaBars(rows, names) {
   const bars = rows
     .map((r) => {
       const min = Math.round(r.sec / 60);
-      return `<div class="hbar"><span class="n">${esc(names[r.area])}</span><span class="track2" ${tipAttrs(`${min} min`, names[r.area])} aria-label="${esc(names[r.area])}: ${min} minutes"><span class="fill" style="width:${(r.sec / max) * 100}%"></span></span><span class="v">${min} min</span></div>`;
+      return `<div class="hbar"><span class="n">${esc(names[r.area])}</span><span class="track2" ${tipAttrs(t('chart.min', { n: min }), names[r.area])} aria-label="${esc(names[r.area])}: ${esc(t('chart.minutesLong', { n: min }))}"><span class="fill" style="width:${(r.sec / max) * 100}%"></span></span><span class="v">${esc(t('chart.min', { n: min }))}</span></div>`;
     })
     .join('');
   return `<div class="hbars">${bars}</div>`;
@@ -172,25 +173,25 @@ function hideTip() {
 
 export function installTooltips(root = document) {
   root.addEventListener('pointerover', (e) => {
-    const t = e.target.closest && e.target.closest('[data-tip]');
-    if (t) showTip(t);
+    const el = e.target.closest && e.target.closest('[data-tip]');
+    if (el) showTip(el);
   });
   root.addEventListener('pointerout', (e) => {
-    const t = e.target.closest && e.target.closest('[data-tip]');
-    if (t && !t.contains(e.relatedTarget)) hideTip();
+    const el = e.target.closest && e.target.closest('[data-tip]');
+    if (el && !el.contains(e.relatedTarget)) hideTip();
   });
   root.addEventListener('focusin', (e) => {
-    const t = e.target.closest && e.target.closest('[data-tip]');
-    if (t) showTip(t);
+    const el = e.target.closest && e.target.closest('[data-tip]');
+    if (el) showTip(el);
   });
   root.addEventListener('focusout', hideTip);
   root.addEventListener('pointerdown', (e) => {
-    const t = e.target.closest && e.target.closest('[data-tip]');
+    const el = e.target.closest && e.target.closest('[data-tip]');
     clearTimeout(hideTimer);
-    if (t && e.pointerType === 'touch') {
-      showTip(t);
+    if (el && e.pointerType === 'touch') {
+      showTip(el);
       hideTimer = setTimeout(hideTip, 2600);
-    } else if (!t) hideTip();
+    } else if (!el) hideTip();
   });
   window.addEventListener('scroll', hideTip, { passive: true });
 }

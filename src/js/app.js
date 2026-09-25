@@ -22,14 +22,10 @@ import { streak } from './lib/stats.js';
 import { dayKey } from './lib/dates.js';
 import { onVoicesChanged } from './lib/audio.js';
 import { holdScale } from './screens/common.js';
+import { t, lang, setLang, detectLang, inline } from './i18n.js';
 
 const SCREENS = { today, explore, progress, you, exercise, routine, build, check, plan, guide };
-const TABS = [
-  ['today', 'Today'],
-  ['explore', 'Explore'],
-  ['progress', 'Progress'],
-  ['you', 'You'],
-];
+const TABS = ['today', 'explore', 'progress', 'you'];
 const TAB_OF = { today: 'today', explore: 'explore', progress: 'progress', you: 'you', exercise: 'explore', routine: 'explore', build: 'today', check: 'progress', plan: 'today', guide: 'you' };
 const KIND_COLOR = { hold: 'teal', flow: 'sunrise', breath: 'sky' };
 
@@ -57,26 +53,41 @@ export function createApp(root, store) {
   };
 
   root.innerHTML = `<div class="app">
-    <nav class="tabs" aria-label="Main">
+    <nav class="tabs">
       <span class="brand"><span class="wordmark">unstuck</span></span>
-      ${TABS.map(([id, label]) => `<button class="tab" data-tab="${id}"><span class="tab-icon">${icon(id)}</span><span>${label}</span></button>`).join('')}
+      ${TABS.map((id) => `<button class="tab" data-tab="${id}"><span class="tab-icon">${icon(id)}</span><span class="tab-label"></span></button>`).join('')}
     </nav>
     <main class="view" id="view" tabindex="-1"></main>
   </div>`;
   const view = root.querySelector('#view');
+  const nav = root.querySelector('.tabs');
   const tabs = [...root.querySelectorAll('[data-tab]')];
+
+  /** Follow the language setting (or the browser's language until one is picked). */
+  let shown = null;
+  const syncLang = () => {
+    const want = store.state.settings.lang || detectLang();
+    if (want !== lang() || shown === null) setLang(want);
+    if (shown === lang()) return;
+    shown = lang();
+    nav.setAttribute('aria-label', t('nav.main'));
+    tabs.forEach((el) => {
+      el.querySelector('.tab-label').textContent = t('tab.' + el.dataset.tab);
+    });
+  };
 
   let quiet = false;
 
   app.render = ({ keepScroll = false, focus = false } = {}) => {
+    syncLang();
     const scr = SCREENS[app.route.name] || today;
     const y = window.scrollY;
     view.innerHTML = String(scr.render(app, app.route));
     if (scr.mount) scr.mount(app, view, app.route);
     const tab = TAB_OF[app.route.name];
-    tabs.forEach((t) => {
-      if (t.dataset.tab === tab) t.setAttribute('aria-current', 'page');
-      else t.removeAttribute('aria-current');
+    tabs.forEach((el) => {
+      if (el.dataset.tab === tab) el.setAttribute('aria-current', 'page');
+      else el.removeAttribute('aria-current');
     });
     if (keepScroll) window.scrollTo(0, y);
     if (focus) {
@@ -116,7 +127,7 @@ export function createApp(root, store) {
     const r = ROUTINE[id];
     if (!r) return;
     startSession(app, {
-      title: day ? `Day ${day}: ${r.name}` : r.name,
+      title: day ? t('session.day', { day, name: r.name }) : r.name,
       color: r.color,
       items: routineItems(r),
       source: day ? 'program' : 'routine',
@@ -129,26 +140,34 @@ export function createApp(root, store) {
 
   app.afterSession = (session, countedForPlan) => {
     const st = streak(app.store.state.sessions, dayKey());
-    const streakText = st.days > 1 ? ` ${st.days} days in a row.` : '';
-    toast(countedForPlan ? `Day ${session.programDay} done.${streakText}` : `Session saved.${streakText}`);
+    const streakText = st.days > 1 ? ' ' + t('toast.streak', { n: st.days }) : '';
+    toast((countedForPlan ? t('toast.dayDone', { day: session.programDay }) : t('toast.saved')) + streakText);
     if (app.route.name !== 'progress') app.go('today', { tab: true });
   };
 
   const GLOBAL = {
     back: () => app.back(),
+    lang: (a, el) => {
+      const v = el.dataset.v;
+      if (v === lang() && app.store.state.settings.lang === v) return;
+      app.store.update((s) => {
+        s.settings.lang = v;
+      });
+    },
     'start-routine': (a, el) => app.startRoutine(el.dataset.id, el.dataset.day ? +el.dataset.day : null),
     'start-exercise': (a, el) => {
       const ex = EXERCISE[el.dataset.id];
-      startSession(app, { title: ex.name, color: KIND_COLOR[ex.kind], items: [{ id: ex.id, sec: ex.sec }], source: 'single' });
+      startSession(app, { title: ex.name, color: KIND_COLOR[ex.kind], items: [{ id: ex.id, sec: ex.sec }], source: 'single', exId: ex.id });
     },
     'start-custom': () => {
       const items = build.items(app);
-      const focus = [...app.ui.stuck].slice(0, 2).map((a) => AREA_NAME[a]);
+      const focus = [...app.ui.stuck].slice(0, 2);
       startSession(app, {
-        title: focus.length ? `${focus.join(' & ')} session` : 'Your session',
+        title: focus.length ? t('session.customFocus', { areas: focus.map((a) => inline(AREA_NAME[a])).join(t('list.and')) }) : t('session.custom'),
         color: 'clay',
         items,
         source: 'custom',
+        focus,
         stuck: [...app.ui.stuck],
       });
     },
@@ -160,17 +179,17 @@ export function createApp(root, store) {
       app.go(tabBtn.dataset.tab, { tab: true });
       return;
     }
-    const t = e.target.closest('[data-act], [data-go], [data-area]');
-    if (!t || !view.contains(t) || t.hasAttribute('disabled')) return;
-    if (t.dataset.go) {
+    const el = e.target.closest('[data-act], [data-go], [data-area]');
+    if (!el || !view.contains(el) || el.hasAttribute('disabled')) return;
+    if (el.dataset.go) {
       e.preventDefault();
-      app.go(t.dataset.go, { day: t.dataset.day ? +t.dataset.day : undefined });
+      app.go(el.dataset.go, { day: el.dataset.day ? +el.dataset.day : undefined });
       return;
     }
-    const act = t.dataset.act || (t.dataset.area ? 'area' : null);
+    const act = el.dataset.act || (el.dataset.area ? 'area' : null);
     const scr = SCREENS[app.route.name];
-    if (GLOBAL[act]) GLOBAL[act](app, t, e);
-    else if (scr.actions && scr.actions[act]) scr.actions[act](app, t, e);
+    if (GLOBAL[act]) GLOBAL[act](app, el, e);
+    else if (scr.actions && scr.actions[act]) scr.actions[act](app, el, e);
   });
 
   root.addEventListener('keydown', (e) => {

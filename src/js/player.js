@@ -10,8 +10,10 @@ import { fmtClock, dayKey } from './lib/dates.js';
 import { AREAS } from './data/areas.js';
 import { streak } from './lib/stats.js';
 import { newId } from './lib/store.js';
+import { t, lang } from './i18n.js';
 
-const FEELINGS = ['Calmer', 'Looser', 'Lighter', 'Sleepy', 'Energised', 'Same', 'Sore'];
+// Saved as ids, shown in the current language.
+const FEELINGS = ['calmer', 'looser', 'lighter', 'sleepy', 'energised', 'same', 'sore'];
 
 function scaleButtons(selected, attr) {
   let out = '';
@@ -69,18 +71,18 @@ class Player {
     this.phase = 'checkin';
     const areas = AREAS.map((a) => `<button type="button" class="chip" data-stuck="${a.id}" aria-pressed="${this.stuck.has(a.id)}">${esc(a.name)}</button>`).join('');
     this.el.innerHTML = `
-      <div class="player-top"><button class="icon-btn" data-p="quit" aria-label="Close">${icon('close')}</button><div class="grow">${esc(this.opts.title)}</div><span style="width:44px"></span></div>
+      <div class="player-top"><button class="icon-btn" data-p="quit" aria-label="${esc(t('player.close'))}">${icon('close')}</button><div class="grow">${esc(this.opts.title)}</div><span style="width:44px"></span></div>
       <div class="player-done">
-        <span class="kicker">Before you start</span>
-        <h2>How tense do you feel?</h2>
+        <span class="kicker">${esc(t('player.before'))}</span>
+        <h2>${esc(t('player.howTense'))}</h2>
         <div class="stack" style="width:100%">
-          <div class="scale" role="group" aria-label="Tension from 1 to 10">${scaleButtons(this.before, 'before')}</div>
-          <div class="scale-ends"><span>1 · Loose</span><span>10 · Locked up</span></div>
+          <div class="scale" role="group" aria-label="${esc(t('player.tensionAria'))}">${scaleButtons(this.before, 'before')}</div>
+          <div class="scale-ends"><span>${esc(t('player.loose'))}</span><span>${esc(t('player.locked'))}</span></div>
         </div>
-        <p class="small" style="opacity:.85">Where do you feel stuck? <span style="opacity:.75">(optional)</span></p>
+        <p class="small" style="opacity:.85">${esc(t('player.whereStuck'))} <span style="opacity:.75">${esc(t('player.optional'))}</span></p>
         <div class="chips" style="justify-content:center">${areas}</div>
-        <button class="btn btn-lg btn-wide" data-p="begin">${icon('play')} Start</button>
-        <button class="link-btn" data-p="begin-skip" style="color:inherit">Skip the check-in</button>
+        <button class="btn btn-lg btn-wide" data-p="begin">${icon('play')} ${esc(t('player.start'))}</button>
+        <button class="link-btn" data-p="begin-skip" style="color:inherit">${esc(t('player.skipCheckin'))}</button>
       </div>`;
   }
 
@@ -102,9 +104,9 @@ class Player {
     const segs = this.poseSteps.map(() => '<i><b></b></i>').join('');
     this.el.innerHTML = `
       <div class="player-top">
-        <button class="icon-btn" data-p="close" aria-label="End session">${icon('close')}</button>
+        <button class="icon-btn" data-p="close" aria-label="${esc(t('player.end'))}">${icon('close')}</button>
         <div class="grow"><span data-r="count"></span> · <span data-r="left"></span></div>
-        <button class="icon-btn" data-p="sound" aria-label="Sound" aria-pressed="true">${icon('volume')}</button>
+        <button class="icon-btn" data-p="sound" aria-label="${esc(t('player.sound'))}" aria-pressed="true">${icon('volume')}</button>
       </div>
       <div class="segs" aria-hidden="true">${segs}</div>
       <div class="player-main">
@@ -119,9 +121,9 @@ class Player {
           <div class="clock" data-r="clock" aria-hidden="true"></div>
           <p class="cue" data-r="cue"></p>
           <div class="controls">
-            <button class="icon-btn" data-p="prev" aria-label="Go back">${icon('prev')}</button>
-            <button class="icon-btn play" data-p="toggle" aria-label="Pause">${icon('pause')}</button>
-            <button class="icon-btn" data-p="next" aria-label="Skip">${icon('next')}</button>
+            <button class="icon-btn" data-p="prev" aria-label="${esc(t('player.goBack'))}">${icon('prev')}</button>
+            <button class="icon-btn play" data-p="toggle" aria-label="${esc(t('player.pause'))}">${icon('pause')}</button>
+            <button class="icon-btn" data-p="next" aria-label="${esc(t('player.skip'))}">${icon('next')}</button>
           </div>
           <p class="next-up" data-r="nextup"></p>
         </div>
@@ -149,15 +151,15 @@ class Player {
 
     // text
     const exNum = this.steps.slice(0, index + 1).filter((x) => x.type === 'move').length;
-    this.set('count', `${exNum} of ${this.exCount}`);
+    this.set('count', t('player.count', { n: exNum, total: this.exCount }));
     this.set('name', ex.name);
-    this.r.kicker.textContent = st.type === 'move' ? (st.first ? 'First up' : 'Next up') : st.type === 'switch' ? 'Switch sides' : isBreath ? 'Breathe' : ex.kind === 'flow' ? 'Move slowly' : 'Hold and relax';
+    this.r.kicker.textContent = t(st.type === 'move' ? (st.first ? 'player.firstUp' : 'player.nextUp') : st.type === 'switch' ? 'player.switch' : isBreath ? 'player.breathe' : ex.kind === 'flow' ? 'player.moveSlowly' : 'player.hold');
     const side = st.type === 'pose' && ex.sides ? ex.sideLabels[st.side] : st.type === 'switch' ? ex.sideLabels[1] : st.type === 'move' && ex.sides ? ex.sideLabels[0] : '';
     this.r.side.hidden = !side;
     this.r.side.textContent = side;
-    this.r.nextup.textContent = st.type === 'pose' && nextPose ? `Next: ${nextPose.ex.name}` : st.type === 'pose' && ex.sides && st.side === 0 ? 'Then the other side' : '';
-    if (st.type === 'pose' && !nextPose && !(ex.sides && st.side === 0)) this.r.nextup.textContent = 'Last one';
-    this.showCue(st.type === 'move' ? ex.setup.join(' ') : st.type === 'switch' ? 'Come out slowly, then set up the other side.' : ex.cues[0]);
+    this.r.nextup.textContent = st.type === 'pose' && nextPose ? t('player.next', { name: nextPose.ex.name }) : st.type === 'pose' && ex.sides && st.side === 0 ? t('player.otherSide') : '';
+    if (st.type === 'pose' && !nextPose && !(ex.sides && st.side === 0)) this.r.nextup.textContent = t('player.lastOne');
+    this.showCue(st.type === 'move' ? ex.setup.join(' ') : st.type === 'switch' ? t('player.switchCue') : ex.cues[0]);
 
     // figure or breathing orb
     this.r.orbwrap.hidden = !(isBreath && st.type === 'pose');
@@ -185,10 +187,10 @@ class Player {
     if (!quiet && this.sound) {
       if (st.type === 'move') {
         if (this.chimes) chime('next', this.app.store.state.settings.volume);
-        if (this.voice) speak(`${st.first ? 'First' : 'Next'}: ${ex.say}`, this.voiceOpts());
+        if (this.voice) speak(t(st.first ? 'say.first' : 'say.next', { text: ex.say }), this.voiceOpts());
       } else if (st.type === 'switch') {
         if (this.chimes) chime('switch', this.app.store.state.settings.volume);
-        if (this.voice) speak(`Switch sides. ${ex.sideLabels[1]}.`, this.voiceOpts());
+        if (this.voice) speak(t('say.switch', { side: ex.sideLabels[1] }), this.voiceOpts());
       } else if (this.chimes) chime('start', this.app.store.state.settings.volume);
     }
     this.paint(true);
@@ -196,7 +198,7 @@ class Player {
 
   voiceOpts() {
     const s = this.app.store.state.settings;
-    return { voiceURI: s.voiceURI, rate: s.rate };
+    return { voiceURI: s.voices[lang()] || '', rate: s.rate, lang: lang() };
   }
 
   loop(now, fromBackup = false) {
@@ -262,17 +264,17 @@ class Player {
   breathPhase(ex) {
     const pattern = ex.breath;
     const cycleLen = pattern.reduce((a, p) => a + p.sec, 0);
-    const t = this.elapsed % cycleLen;
+    const at = this.elapsed % cycleLen;
     const cycle = Math.floor(this.elapsed / cycleLen);
     let acc = 0;
     let prevLevel = pattern[pattern.length - 1].level;
     for (let index = 0; index < pattern.length; index++) {
       const p = pattern[index];
-      if (t < acc + p.sec) {
-        const u = (t - acc) / p.sec;
+      if (at < acc + p.sec) {
+        const u = (at - acc) / p.sec;
         const e = 0.5 - 0.5 * Math.cos(Math.PI * u);
         const level = prevLevel + (p.level - prevLevel) * e;
-        return { label: p.label, index, cycle, level, left: Math.ceil(acc + p.sec - t) };
+        return { label: p.label, index, cycle, level, left: Math.ceil(acc + p.sec - at) };
       }
       acc += p.sec;
       prevLevel = p.level;
@@ -305,7 +307,7 @@ class Player {
     this.set('clock', st.type === 'pose' ? fmtClock(remain) : String(Math.max(1, Math.ceil(remain))));
     let left = remain;
     for (let k = this.i + 1; k < this.steps.length; k++) left += this.steps[k].sec;
-    this.set('left', `${fmtClock(left)} left`);
+    this.set('left', t('player.left', { time: fmtClock(left) }));
     const k = this.poseSteps.indexOf(this.i);
     if (k >= 0) this.segEls[k].firstChild.style.width = `${Math.min(100, (this.elapsed / st.sec) * 100)}%`;
     if (st.ex.kind === 'breath' && st.type === 'pose') {
@@ -322,7 +324,7 @@ class Player {
     this.last = performance.now();
     const btn = this.el.querySelector('[data-p="toggle"]');
     btn.innerHTML = icon(this.paused ? 'play' : 'pause');
-    btn.setAttribute('aria-label', this.paused ? 'Resume' : 'Pause');
+    btn.setAttribute('aria-label', t(this.paused ? 'player.resume' : 'player.pause'));
     if (this.paused) {
       stopSpeaking();
       if (this.figure) this.figure.pause();
@@ -348,11 +350,11 @@ class Player {
     const box = document.createElement('div');
     box.className = 'confirm';
     const worth = this.active >= 60;
-    box.innerHTML = `<div><h3>End this session?</h3>
-      <p style="opacity:.85">${worth ? 'You can save what you did so far.' : 'Less than a minute so far, so there is nothing to save yet.'}</p>
-      <button class="btn" data-p="resume">Keep going</button>
-      ${worth ? '<button class="btn btn-ghost" data-p="finish">Finish and save</button>' : ''}
-      <button class="btn btn-ghost" data-p="quit">${worth ? 'Discard' : 'Leave'}</button></div>`;
+    box.innerHTML = `<div><h3>${esc(t('player.endQ'))}</h3>
+      <p style="opacity:.85">${esc(t(worth ? 'player.endSave' : 'player.endShort'))}</p>
+      <button class="btn" data-p="resume">${esc(t('player.keepGoing'))}</button>
+      ${worth ? `<button class="btn btn-ghost" data-p="finish">${esc(t('player.finishSave'))}</button>` : ''}
+      <button class="btn btn-ghost" data-p="quit">${esc(t(worth ? 'player.discard' : 'player.leave'))}</button></div>`;
     this.el.appendChild(box);
     box.querySelector('[data-p="resume"]').focus();
   }
@@ -379,33 +381,33 @@ class Player {
   }
 
   onClick(e) {
-    const t = e.target.closest('[data-p], [data-before], [data-after], [data-stuck], [data-feel]');
-    if (!t) return;
-    if (t.dataset.before) {
-      this.before = +t.dataset.before;
+    const el = e.target.closest('[data-p], [data-before], [data-after], [data-stuck], [data-feel]');
+    if (!el) return;
+    if (el.dataset.before) {
+      this.before = +el.dataset.before;
       this.el.querySelectorAll('[data-before]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.before === this.before)));
       return;
     }
-    if (t.dataset.after) {
-      this.after = +t.dataset.after;
+    if (el.dataset.after) {
+      this.after = +el.dataset.after;
       this.el.querySelectorAll('[data-after]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.after === this.after)));
       return;
     }
-    if (t.dataset.stuck) {
-      const a = t.dataset.stuck;
+    if (el.dataset.stuck) {
+      const a = el.dataset.stuck;
       if (this.stuck.has(a)) this.stuck.delete(a);
       else this.stuck.add(a);
-      t.setAttribute('aria-pressed', String(this.stuck.has(a)));
+      el.setAttribute('aria-pressed', String(this.stuck.has(a)));
       return;
     }
-    if (t.dataset.feel) {
-      const a = t.dataset.feel;
+    if (el.dataset.feel) {
+      const a = el.dataset.feel;
       if (this.feel.has(a)) this.feel.delete(a);
       else this.feel.add(a);
-      t.setAttribute('aria-pressed', String(this.feel.has(a)));
+      el.setAttribute('aria-pressed', String(this.feel.has(a)));
       return;
     }
-    const act = t.dataset.p;
+    const act = el.dataset.p;
     if (act === 'begin') this.begin();
     else if (act === 'begin-skip') {
       this.before = null;
@@ -423,9 +425,9 @@ class Player {
     else if (act === 'sound') {
       this.muted = !this.muted;
       if (this.muted) stopSpeaking();
-      t.innerHTML = icon(this.muted ? 'mute' : 'volume');
-      t.setAttribute('aria-pressed', String(!this.muted));
-      t.setAttribute('aria-label', this.muted ? 'Sound off' : 'Sound on');
+      el.innerHTML = icon(this.muted ? 'mute' : 'volume');
+      el.setAttribute('aria-pressed', String(!this.muted));
+      el.setAttribute('aria-label', t(this.muted ? 'player.soundOff' : 'player.soundOn'));
     } else if (act === 'save') this.save();
     else if (act === 'discard') this.close();
   }
@@ -442,37 +444,37 @@ class Player {
     this.completed = completed;
     if (this.sound) {
       if (this.chimes) chime('done', this.app.store.state.settings.volume);
-      if (this.voice && completed) speak('Well done. Take a moment to notice how your body feels.', this.voiceOpts());
+      if (this.voice && completed) speak(t('say.done'), this.voiceOpts());
     }
     const state = this.app.store.state;
     const today = dayKey();
     const minutes = Math.max(1, Math.round(this.active / 60));
     const poses = Object.keys(this.exSec).length;
     const nextStreak = streak([...state.sessions, { day: today, sec: this.active }], today).days;
-    const feel = FEELINGS.map((f) => `<button type="button" class="chip" data-feel="${f}" aria-pressed="false">${f}</button>`).join('');
+    const feel = FEELINGS.map((f) => `<button type="button" class="chip" data-feel="${f}" aria-pressed="false">${esc(t('feel.' + f))}</button>`).join('');
     this.el.innerHTML = `
       <div class="player-top"><span style="width:44px"></span><div class="grow">${esc(this.opts.title)}</div><span style="width:44px"></span></div>
       <div class="player-done">
-        <span class="kicker">${completed ? 'Session complete' : 'Session ended early'}</span>
-        <h2>${completed ? 'Nice work.' : 'Every minute counts.'}</h2>
+        <span class="kicker">${esc(t(completed ? 'player.complete' : 'player.endedEarly'))}</span>
+        <h2>${esc(t(completed ? 'player.niceWork' : 'player.everyMinute'))}</h2>
         <div class="done-stats">
-          <div><b>${minutes}</b><span>${minutes === 1 ? 'minute' : 'minutes'}</span></div>
-          <div><b>${poses}</b><span>${poses === 1 ? 'exercise' : 'exercises'}</span></div>
-          ${nextStreak ? `<div><b>${nextStreak}</b><span>day streak</span></div>` : ''}
+          <div><b>${minutes}</b><span>${esc(t('player.minutes', { n: minutes }))}</span></div>
+          <div><b>${poses}</b><span>${esc(t('player.exercises', { n: poses }))}</span></div>
+          ${nextStreak ? `<div><b>${nextStreak}</b><span>${esc(t('player.streak'))}</span></div>` : ''}
         </div>
         ${state.settings.checkins ? `
         <div class="stack" style="width:100%">
-          <p style="font-weight:800;font-size:18px">How tense do you feel now?</p>
-          ${this.before ? `<p class="small" style="opacity:.8">Before: ${this.before}</p>` : ''}
-          <div class="scale" role="group" aria-label="Tension from 1 to 10">${scaleButtons(this.after, 'after')}</div>
-          <div class="scale-ends"><span>1 · Loose</span><span>10 · Locked up</span></div>
+          <p style="font-weight:800;font-size:18px">${esc(t('player.tenseNow'))}</p>
+          ${this.before ? `<p class="small" style="opacity:.8">${esc(t('player.beforeWas', { n: this.before }))}</p>` : ''}
+          <div class="scale" role="group" aria-label="${esc(t('player.tensionAria'))}">${scaleButtons(this.after, 'after')}</div>
+          <div class="scale-ends"><span>${esc(t('player.loose'))}</span><span>${esc(t('player.locked'))}</span></div>
         </div>` : ''}
-        <p style="font-weight:800">How do you feel?</p>
+        <p style="font-weight:800">${esc(t('player.howFeel'))}</p>
         <div class="chips" style="justify-content:center">${feel}</div>
-        <label class="sr" for="p-note">Note</label>
-        <textarea id="p-note" class="input" placeholder="Anything to remember? (optional)"></textarea>
-        <button class="btn btn-lg btn-wide" data-p="save">${icon('check')} Save session</button>
-        <button class="link-btn" data-p="discard" style="color:inherit">Don't save</button>
+        <label class="sr" for="p-note">${esc(t('player.note'))}</label>
+        <textarea id="p-note" class="input" placeholder="${esc(t('player.notePh'))}"></textarea>
+        <button class="btn btn-lg btn-wide" data-p="save">${icon('check')} ${esc(t('player.save'))}</button>
+        <button class="link-btn" data-p="discard" style="color:inherit">${esc(t('player.dontSave'))}</button>
       </div>`;
   }
 
@@ -487,6 +489,8 @@ class Player {
       day: today,
       title: this.opts.title,
       routineId: this.opts.routineId || null,
+      ...(this.opts.exId ? { exId: this.opts.exId } : {}),
+      ...(this.opts.focus ? { focus: this.opts.focus } : {}),
       source: this.opts.source || 'routine',
       programDay: this.opts.programDay || null,
       sec: Math.round(this.active),
@@ -526,7 +530,7 @@ class Player {
 
 /**
  * @param app  the app (store, afterSession)
- * @param opts {title, color, items: [{id, sec}], source, routineId, programDay, scale, stuck}
+ * @param opts {title, color, items: [{id, sec}], source, routineId, exId, focus, programDay, scale, stuck}
  */
 export function startSession(app, opts) {
   if (app.player) app.player.close();

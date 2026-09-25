@@ -67,11 +67,18 @@ export function speechAvailable() {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
-/** English voices, best-sounding first. */
-export function englishVoices() {
+const GOOD_VOICES = /google|samantha|daniel|serena|karen|moira|aria|jenny|guy|libby|ryan|xander|claire|ellen|fenna|maarten|colette|arnaud|dena/i;
+
+/** Voices for a language ('en' or 'nl'), best-sounding first. */
+export function voicesFor(lang = 'en') {
   if (!speechAvailable()) return [];
-  const all = speechSynthesis.getVoices().filter((v) => /^en/i.test(v.lang));
-  const score = (v) => (/natural|neural|premium|enhanced/i.test(v.name) ? 3 : 0) + (/google|samantha|daniel|serena|karen|moira|aria|jenny|guy|libby|ryan/i.test(v.name) ? 2 : 0) + (v.localService ? 1 : 0);
+  const prefix = new RegExp('^' + lang, 'i');
+  const all = speechSynthesis.getVoices().filter((v) => prefix.test(v.lang));
+  const score = (v) =>
+    (/natural|neural|premium|enhanced/i.test(v.name) ? 3 : 0) +
+    (GOOD_VOICES.test(v.name) ? 2 : 0) +
+    (v.localService ? 1 : 0) +
+    (/^nl-NL|^en-GB/i.test(v.lang) ? 0.5 : 0);
   return all.sort((a, b) => score(b) - score(a));
 }
 
@@ -84,17 +91,17 @@ export function onVoicesChanged(fn) {
   }
 }
 
-export function speak(text, { voiceURI = '', rate = 1 } = {}) {
+export function speak(text, { voiceURI = '', rate = 1, lang = 'en' } = {}) {
   if (!speechAvailable() || !text) return;
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    const voices = englishVoices();
+    const voices = voicesFor(lang);
     const v = voices.find((x) => x.voiceURI === voiceURI) || voices[0];
     if (v) {
       u.voice = v;
       u.lang = v.lang;
-    } else u.lang = 'en-GB';
+    } else u.lang = lang === 'nl' ? 'nl-NL' : 'en-GB';
     u.rate = rate * 0.95;
     u.pitch = 1;
     speechSynthesis.speak(u);

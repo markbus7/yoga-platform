@@ -3,6 +3,7 @@
 
 import { solvePose, capsulePath, circlePath, HEAD_R } from '../figure/rig.js';
 import { AREA_NAME } from '../data/areas.js';
+import { t } from '../i18n.js';
 
 const POSE = { view: 'front', uarmL: 108, farmL: 100, handL: 98, uarmR: 72, farmR: 80, handR: 82, thighL: 94, thighR: 86 };
 
@@ -85,7 +86,7 @@ function view(side, selected) {
       return `<path class="bm-hit${on ? ' on' : ''}" d="${d}" data-area="${area}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${AREA_NAME[area]}"><title>${AREA_NAME[area]}</title></path>`;
     })
     .join('');
-  return `<figure><svg viewBox="${g.viewBox}" aria-label="${side === 'front' ? 'Front of body' : 'Back of body'}">${g.body}<path class="bm-body" d="${g.head}"/>${hair(side, g)}${hits}</svg><figcaption>${side === 'front' ? 'Front' : 'Back'}</figcaption></figure>`;
+  return `<figure><svg viewBox="${g.viewBox}" aria-label="${t(side === 'front' ? 'bm.frontAria' : 'bm.backAria')}">${g.body}<path class="bm-body" d="${g.head}"/>${hair(side, g)}${hits}</svg><figcaption>${t(side === 'front' ? 'bm.front' : 'bm.back')}</figcaption></figure>`;
 }
 
 /** Markup for the two-view map. Clicks bubble from elements with [data-area]. */

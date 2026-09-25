@@ -35,34 +35,46 @@ export function monthKey(key) {
   return key.slice(0, 7);
 }
 
-const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const NAMES = {
+  en: {
+    days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  },
+  nl: {
+    days: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
+    months: ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
+  },
+};
+let names = NAMES.en;
+
+/** Switch month and weekday names ('en' or 'nl'). */
+export function setDateLocale(lang) {
+  names = NAMES[lang] || NAMES.en;
+}
 
 export function weekdayShort(key) {
-  return DAY_SHORT[(parseDay(key).getDay() + 6) % 7];
+  return names.days[(parseDay(key).getDay() + 6) % 7];
+}
+
+export function monthShort(key) {
+  return names.months[parseDay(key.length === 7 ? key + '-01' : key).getMonth()];
 }
 
 export function fmtDay(key, { weekday = false } = {}) {
   const d = parseDay(key);
-  const s = `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  const s = `${d.getDate()} ${names.months[d.getMonth()]}`;
   return weekday ? `${weekdayShort(key)} ${s}` : s;
 }
 
 export function fmtMonth(key) {
   const d = parseDay(key.length === 7 ? key + '-01' : key);
-  return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `${names.months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /** 95 -> "1:35" */
 export function fmtClock(sec) {
   const s = Math.max(0, Math.ceil(sec));
   return `${Math.floor(s / 60)}:${pad(s % 60)}`;
-}
-
-/** 610 -> "10 min", 45 -> "45 sec" */
-export function fmtLength(sec) {
-  if (sec < 60) return `${Math.round(sec)} sec`;
-  return `${Math.round(sec / 60)} min`;
 }
 
 export function partOfDay(d = new Date()) {

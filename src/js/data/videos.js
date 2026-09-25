@@ -1,5 +1,6 @@
 // Free follow-along classes on YouTube, picked for stiff beginners.
 // Minutes come from each video's own title or listing; null when unknown.
+// `lang` is the language the teacher speaks in.
 
 export const VIDEOS = [
   {
@@ -9,6 +10,7 @@ export const VIDEOS = [
     minutes: 20,
     focus: 'Full body',
     why: 'The classic first class. Slow, friendly and explains the basics.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=v7AYKMP6rOE',
   },
   {
@@ -18,6 +20,7 @@ export const VIDEOS = [
     minutes: 15,
     focus: 'Full body',
     why: 'Made for stiff people. Straightforward stretches with clear holds.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=QR0JKN1NmV8',
   },
   {
@@ -27,6 +30,7 @@ export const VIDEOS = [
     minutes: 20,
     focus: 'Full body',
     why: 'A step up from the 15 minute version. Great for a weekend.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=VdlN7kUfZZ4',
   },
   {
@@ -36,6 +40,7 @@ export const VIDEOS = [
     minutes: 45,
     focus: 'Gravity holds',
     why: 'Long passive holds, the same idea as gravity poses. For a slow evening.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=l59RmHmQcGc',
   },
   {
@@ -45,6 +50,7 @@ export const VIDEOS = [
     minutes: null,
     focus: 'Hips',
     why: 'Passive gravity-style holds for tight hips.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=i6mLUjveD_Q',
   },
   {
@@ -54,6 +60,7 @@ export const VIDEOS = [
     minutes: null,
     focus: 'Back of legs',
     why: 'Passive gravity-style holds for the backs of your legs.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=h4NrqFlPGQ8',
   },
   {
@@ -63,6 +70,7 @@ export const VIDEOS = [
     minutes: null,
     focus: 'Neck & shoulders',
     why: 'Under 20 minutes, on the floor or in a chair.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=SedzswEwpPw',
   },
   {
@@ -72,6 +80,7 @@ export const VIDEOS = [
     minutes: 23,
     focus: 'Hips & lower back',
     why: 'Slow paced and beginner friendly.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=Ho9em79_0qg',
   },
   {
@@ -81,6 +90,7 @@ export const VIDEOS = [
     minutes: 27,
     focus: 'Lower back',
     why: 'Works on everything that feeds into a sore lower back.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=J-05m7bboK0',
   },
   {
@@ -90,6 +100,7 @@ export const VIDEOS = [
     minutes: null,
     focus: 'Desk',
     why: 'Chair-based, for a break during the workday.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=tAUf7aajBWE',
   },
   {
@@ -99,6 +110,7 @@ export const VIDEOS = [
     minutes: 7,
     focus: 'Stress',
     why: 'Short and effective when your head is busy.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=qiKJRoX_2uo',
   },
   {
@@ -108,7 +120,98 @@ export const VIDEOS = [
     minutes: 20,
     focus: 'Sleep',
     why: 'Mostly seated and lying down. Made for right before bed.',
+    lang: 'en',
     url: 'https://www.youtube.com/watch?v=v7SN-d4qXx0',
+  },
+  {
+    id: 'nl-hwy-beginners',
+    title: 'Yoga voor beginners oefeningen (15 min)',
+    teacher: 'Happy with Yoga',
+    minutes: 15,
+    focus: 'Full body',
+    why: 'A short, friendly first class.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=6fTAJPQlARU',
+  },
+  {
+    id: 'nl-hwy-yin',
+    title: 'Yin Yoga voor beginners',
+    teacher: 'Happy with Yoga',
+    minutes: null,
+    focus: 'Gravity holds',
+    why: 'Yin explained step by step for beginners.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=E3_hFfmquPA',
+  },
+  {
+    id: 'nl-yin-leonie',
+    title: '50 min Yin Yoga voor ontspanning',
+    teacher: 'Léonie de Dreu',
+    minutes: 50,
+    focus: 'Gravity holds',
+    why: 'A calm yin class that settles your nervous system.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=R4g_rGrhjfM',
+  },
+  {
+    id: 'nl-stretch-vera',
+    title: 'Spieren stretchen voor beginners: lichaam losmaken',
+    teacher: 'Sporten & Bewegen met Vera',
+    minutes: null,
+    focus: 'Full body',
+    why: 'Gentle stretches to loosen your whole body.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=b9Je2C4QTns',
+  },
+  {
+    id: 'nl-stretch-optima',
+    title: 'Stretch routine: rekken voor beginners en gevorderden',
+    teacher: 'Optima Vita',
+    minutes: 15,
+    focus: 'Full body',
+    why: 'A full-body stretch routine of about a quarter of an hour.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=T-n9FupCwD0',
+  },
+  {
+    id: 'nl-yin-neck',
+    title: 'Yin yoga voor nek, schouders en bovenrug (15 minuten)',
+    teacher: null,
+    minutes: 15,
+    focus: 'Neck & shoulders',
+    why: 'Fifteen minutes of long holds for a tense neck and upper back.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=fe0-ogDSATg',
+  },
+  {
+    id: 'nl-neck-15',
+    title: 'Yoga voor spanningen in nek en schouders (15 min)',
+    teacher: null,
+    minutes: 15,
+    focus: 'Neck & shoulders',
+    why: 'A 15-minute class for neck and shoulder tension.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=3n18b6DmhnE',
+  },
+  {
+    id: 'nl-lowerback-marco',
+    title: 'Onderrug Yin Yoga (25 min)',
+    teacher: 'Yoga met Marco Lagas',
+    minutes: 25,
+    focus: 'Lower back',
+    why: 'Long, easy holds for a stiff lower back.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=T-1Ua75UKZo',
+  },
+  {
+    id: 'nl-nidra',
+    title: 'Yoga nidra voor diepe ontspanning',
+    teacher: 'Happy with Yoga',
+    minutes: null,
+    focus: 'Sleep',
+    why: 'A guided relaxation lying down. Good before sleep.',
+    lang: 'nl',
+    url: 'https://www.youtube.com/watch?v=AmfpG3JIt3M',
   },
 ];
 
