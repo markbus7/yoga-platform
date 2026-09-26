@@ -7,3 +7,4 @@ const store = createStore();
 createApp(document.getElementById('app-root'), store);
 // On claude.ai, switch to per-person cloud storage once the viewer grants it.
 store.connectCloud();
+store.resumeSync();

@@ -5,6 +5,8 @@
 // Anywhere else it falls back to this browser's localStorage. A local copy is
 // always kept so the app opens instantly.
 
+import { loadSync, saveSync, findGist, createGist, readGist, writeGist } from './gistsync.js';
+
 const LOCAL_KEY = 'unstuck.v1';
 
 export function defaultState() {
@@ -66,6 +68,15 @@ export function mergeStates(a, b) {
   };
 }
 
+/** True when two copies hold the same practice data (ignores order). */
+export function sameData(a, b) {
+  const key = (x) => {
+    const n = normalize(x);
+    return JSON.stringify([n.sessions.map((s) => s.id).sort(), n.tests.map((s) => s.id).sort(), [...n.removed].sort(), Object.keys(n.program.done).sort(), n.updatedAt]);
+  };
+  return key(a) === key(b);
+}
+
 export const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
 function readLocal() {
@@ -80,7 +91,7 @@ function readLocal() {
 export function createStore() {
   let state = readLocal() || defaultState();
   const subs = new Set();
-  const status = { where: 'local', localOk: true };
+  const status = { where: 'local', localOk: true, sync: 'off', syncedAt: 0, syncError: '' };
   let cloud = null;
   const dirty = new Set();
   let timer = 0;
@@ -137,11 +148,67 @@ export function createStore() {
     if (dirty.size && cloud) timer = setTimeout(flush, 4000);
   }
 
+  // ---------- GitHub Gist sync (optional, set up under You) ----------
+  let gist = null;
+  let gistTimer = 0;
+  let gistBusy = false;
+  let gistAgain = false;
+  const payload = () => JSON.stringify({ app: 'unstuck', ...state });
+
+  /** Read the gist, merge it in, and write back whatever it is missing. */
+  async function gistSync() {
+    if (!gist) return;
+    if (gistBusy) {
+      gistAgain = true;
+      return;
+    }
+    gistBusy = true;
+    const before = status.sync;
+    try {
+      const remote = await readGist(gist.token, gist.id);
+      const merged = remote ? mergeStates(state, remote) : state;
+      const changed = !sameData(merged, state) || JSON.stringify(merged.settings) !== JSON.stringify(state.settings) || JSON.stringify(merged.profile) !== JSON.stringify(state.profile);
+      if (changed) {
+        state = merged;
+        saveLocal();
+        markDirty(['profile', ...monthsOf(state.sessions)]);
+      }
+      if (!remote || !sameData(remote, state)) await writeGist(gist.token, gist.id, payload());
+      status.sync = 'on';
+      status.syncError = '';
+      status.syncedAt = Date.now();
+      if (changed || before !== 'on') emit();
+    } catch (e) {
+      status.sync = 'error';
+      status.syncError = (e && e.code) || 'server';
+      emit();
+    } finally {
+      gistBusy = false;
+      if (gistAgain) {
+        gistAgain = false;
+        gistSync();
+      }
+    }
+  }
+
+  function scheduleGist() {
+    if (!gist) return;
+    clearTimeout(gistTimer);
+    gistTimer = setTimeout(gistSync, 1500);
+  }
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') gistSync();
+    });
+  }
+
   function change(mutate, keys) {
     mutate(state);
     state.updatedAt = Date.now();
     saveLocal();
     markDirty(keys);
+    scheduleGist();
     emit();
   }
 
@@ -182,6 +249,49 @@ export function createStore() {
       state.updatedAt = Date.now();
       saveLocal();
       markDirty(['profile', ...new Set([...before, ...monthsOf(state.sessions)])]);
+      scheduleGist();
+      emit();
+    },
+    /** Pick up a sync set up earlier on this device. */
+    resumeSync() {
+      const saved = loadSync();
+      if (!saved || !saved.id) return;
+      gist = { token: saved.token, id: saved.id };
+      status.sync = 'connecting';
+      gistSync();
+    },
+    /** Connect this device to the gist for this GitHub token (made if it does not exist yet). */
+    async connectSync(token) {
+      token = String(token || '').trim();
+      status.sync = 'connecting';
+      status.syncError = '';
+      emit();
+      try {
+        const id = (await findGist(token)) || (await createGist(token, payload()));
+        gist = { token, id };
+        saveSync(gist);
+        await gistSync();
+        return status.sync === 'on';
+      } catch (e) {
+        gist = null;
+        status.sync = 'error';
+        status.syncError = (e && e.code) || 'server';
+        emit();
+        return false;
+      }
+    },
+    syncConnected() {
+      return !!gist;
+    },
+    syncNow() {
+      return gistSync();
+    },
+    disconnectSync() {
+      gist = null;
+      saveSync(null);
+      clearTimeout(gistTimer);
+      status.sync = 'off';
+      status.syncError = '';
       emit();
     },
     exportJSON() {

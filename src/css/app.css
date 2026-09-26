@@ -1065,3 +1065,10 @@ details.table-view th { color: var(--ink-2); font-weight: 700; font-size: 13px; 
 .tag.example { background: var(--cork-soft); color: var(--ink); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; font-weight: 800; }
 .is-example { position: relative; }
 .is-example::after { content: 'Example'; position: absolute; top: 14px; right: 16px; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); background: var(--cork-soft); padding: 3px 8px; border-radius: 999px; }
+
+/* sync between devices */
+.sync-box { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radius-s); background: var(--bg-sunk); }
+.sync-box .t { font-weight: 800; display: flex; align-items: center; gap: 6px; }
+.sync-box .t svg { width: 18px; height: 18px; }
+.sync-steps { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.sync-err { color: var(--glow-text); }
