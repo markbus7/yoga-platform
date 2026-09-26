@@ -39,6 +39,8 @@
   --fig-strap: #f26a3d;
   --fig-spreader: #f4a06e;
   --fig-spreader-edge: #d9804f;
+  --fig-shakti: #8c7fd0;
+  --fig-spikes: #e4defa;
   --fig-chair: #9aa7a1;
   --bm-body: #e2e8e3;
   --bm-hit: rgba(19, 32, 29, 0.07);
@@ -110,6 +112,8 @@
     --fig-strap: #ff8759;
     --fig-spreader: #f0a070;
     --fig-spreader-edge: #b86a44;
+    --fig-shakti: #7466bd;
+    --fig-spikes: #c9c0f0;
     --fig-chair: #5a6b66;
     --bm-body: #243631;
     --bm-hit: rgba(228, 238, 234, 0.07);
@@ -170,6 +174,8 @@
   --fig-strap: #ff8759;
   --fig-spreader: #f0a070;
   --fig-spreader-edge: #b86a44;
+  --fig-shakti: #7466bd;
+  --fig-spikes: #c9c0f0;
   --fig-chair: #5a6b66;
   --bm-body: #243631;
   --bm-hit: rgba(228, 238, 234, 0.07);
@@ -624,6 +630,8 @@ svg.fig { display: block; }
 .fg-strap { stroke: var(--fig-strap); stroke-width: 2.4; stroke-linecap: round; fill: none; }
 .fg-spreader { fill: var(--fig-spreader); stroke: var(--fig-spreader-edge); stroke-width: 0.6; }
 .fg-spreader.far { opacity: 0.6; }
+.fg-shakti { fill: var(--fig-shakti); }
+.fg-spikes { fill: var(--fig-spikes); }
 .fg-glow { fill: var(--glow); }
 .fg-glow-g { opacity: 0.55; animation: glow 3.2s ease-in-out infinite; }
 @keyframes glow { 0%, 100% { opacity: 0.38; } 50% { opacity: 0.72; } }

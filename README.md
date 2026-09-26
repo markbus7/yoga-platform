@@ -4,8 +4,9 @@ A daily stretching, gravity-hold and breathing coach for a body that feels stuck
 
 - **Guided sessions** with an animated figure for every exercise, spoken cues, soft chimes, and a screen that stays on while you practise.
 - **Unstuck 30**, a four-week plan: short sessions in week one, holds that slowly get longer after that.
-- **13 routines**: Wake-up Unstick, Gravity Release, Desk Reset, Neck & Shoulders, Hips & Lower Back, Legs & Hamstrings, Happy Feet, Upper Body Unwind, Deep Hip Release, Wind Down, Full Body Deep, Gravity Basics and Just Breathe.
-- **52 exercises** with plain-English names (the yoga name in small print), step-by-step setup, what you should feel and where, easier and deeper options, and when to be careful.
+- **14 routines**: Wake-up Unstick, Gravity Release, Desk Reset, Neck & Shoulders, Hips & Lower Back, Legs & Hamstrings, Happy Feet, Upper Body Unwind, Deep Hip Release, Wind Down, Acupressure Rest, Full Body Deep, Gravity Basics and Just Breathe.
+- **54 exercises** with plain-English names (the yoga name in small print), step-by-step setup, what you should feel and where, easier and deeper options, and when to be careful.
+- **Your gear**: under **You**, say what you have at home. With an acupressure mat (like a Shakti mat) you get the Acupressure Rest routine, and built sessions can use it; without one, those exercises stay out of your sessions.
 - **Toe spreaders**: holds where your feet are free (legs up the wall, butterfly, floor melt and others) remind you to put your toe spreaders in, and the figure wears them. Switch it off under **You** if you do not have any.
 - **Build a session**: tap where you feel stuck on a body map, pick 5 to 20 minutes, and get a session for exactly those spots.
 - **Progress**: streaks, a practice calendar, minutes per week, tension before and after each session, a five-test flexibility check every two weeks, and milestones.
@@ -53,11 +54,11 @@ Spoken guidance uses a voice for the chosen language. Most phones and computers 
 - On claude.ai the page asks for a private per-person database, so progress follows you between devices.
 - Anywhere else it is saved in the browser's local storage. Use **You → Copy backup** now and then, and **Restore a backup** to move it.
 
-### Hosting on GitHub Pages (optional)
+### Hosting on GitHub Pages
 
-1. In the repository settings, open **Pages** and set the source to **GitHub Actions**.
-2. Add a repository variable `PAGES_ENABLED` with the value `true` (**Settings → Secrets and variables → Actions → Variables**).
-3. Push to `main`. The **Deploy to GitHub Pages** workflow builds and publishes `dist/index.html`.
+In the repository settings, open **Pages** and set **Source** to **GitHub Actions**. After that, every push to `main` builds and publishes `dist/index.html` to `https://<owner>.github.io/<repo>/`. Until Pages is switched on, the **Deploy to GitHub Pages** workflow skips itself with a notice; run it again from the Actions tab once it is on.
+
+The public site saves progress in the browser it runs in (use Copy backup to move it). The claude.ai version saves to your Claude account and syncs between devices.
 
 ## Project layout
 

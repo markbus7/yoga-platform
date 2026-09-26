@@ -77,6 +77,14 @@ export function render(app) {
     </section>
 
     <section class="section">
+      <h2 class="section-title">${t('you.gear')}</h2>
+      <div class="card" style="padding-block:4px">
+        <div class="switch-row"><div><div class="t">${t('you.spreaders')}</div><div class="d">${t('you.spreadersText')}</div></div>${sw('spreaders', profile.spreaders, t('you.spreaders'))}</div>
+        <div class="switch-row"><div><div class="t">${t('you.shakti')}</div><div class="d">${t('you.shaktiText')}</div></div>${sw('shakti', profile.shakti, t('you.shakti'))}</div>
+      </div>
+    </section>
+
+    <section class="section">
       <h2 class="section-title">${t('you.session')}</h2>
       <div class="card" style="padding-block:4px">
         <div class="switch-row"><div><div class="t">${t('you.hold')}</div><div class="d">${HOLD_LENGTHS.find((h) => h.id === settings.hold)?.about || ''}</div></div></div>
@@ -84,7 +92,6 @@ export function render(app) {
         <div class="switch-row"><div><div class="t">${t('you.voice')}</div><div class="d">${speechAvailable() ? t('you.voiceOn') : t('you.voiceNone')}</div></div>${sw('voice', settings.voice, t('you.voice'))}</div>
         ${voiceBlock(settings)}
         <div class="switch-row"><div><div class="t">${t('you.chimes')}</div><div class="d">${t('you.chimesText')}</div></div>${sw('chime', settings.chime, t('you.chimes'))}</div>
-        <div class="switch-row"><div><div class="t">${t('you.spreaders')}</div><div class="d">${t('you.spreadersText')}</div></div>${sw('spreaders', profile.spreaders, t('you.spreaders'))}</div>
         <div class="switch-row"><div><div class="t">${t('you.checkins')}</div><div class="d">${t('you.checkinsText')}</div></div>${sw('checkins', settings.checkins, t('you.checkins'))}</div>
         <div class="switch-row" style="display:block"><div class="t" style="margin-bottom:8px">${t('you.transition')}</div><div class="seg" role="group" aria-label="${t('you.transition')}">${TRANSITIONS.map(([v, k]) => html`<button data-act="transition" data-v="${v}" aria-pressed="${settings.transition === v}">${t(k)} · ${v}s</button>`)}</div></div>
       </div>
@@ -152,6 +159,11 @@ export const actions = {
       unlockAudio();
       chime('start', app.store.state.settings.volume);
     }
+  },
+  shakti(app) {
+    set(app, (s) => {
+      s.profile.shakti = !s.profile.shakti;
+    });
   },
   spreaders(app) {
     set(app, (s) => {

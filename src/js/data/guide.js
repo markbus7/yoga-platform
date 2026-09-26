@@ -61,6 +61,21 @@ export const GUIDE = [
     after: 'If you have diabetes, poor circulation, numb feet or a painful bunion, check with a doctor or podiatrist first. Wash them in warm, soapy water now and then.',
   },
   {
+    id: 'shakti',
+    title: 'Your acupressure mat',
+    body: [
+      'An acupressure mat, like your Shakti mat, is covered in small plastic spikes. Lying on it feels prickly for a minute or two, then most people feel warmth and a deep calm spread through their back. It is a good way to switch off in the evening.',
+      'The research is small and mixed, so use it because it feels good, not as a cure.',
+    ],
+    list: [
+      ['How to start', 'Keep a thin T-shirt on and lie down slowly. Five to ten minutes is plenty at first. Build up to 20 minutes if you like it.'],
+      ['Where it fits', 'Acupressure Rest is a routine built around it. Lying on it before bed is a good swap for scrolling.'],
+      ['Your feet', 'Standing on it wakes up your soles. Keep socks on at first and hold on to something.'],
+      ['Getting off', 'Roll onto your side and sit up slowly. The red dots on your skin fade within an hour.'],
+    ],
+    after: 'Skip it on broken, sunburnt or irritated skin, if you bruise easily or take blood thinners, or if you are pregnant. Only stand on it if your feet have normal feeling. Ask a doctor if you are unsure.',
+  },
+  {
     id: 'plan',
     title: 'Your plan',
     body: [

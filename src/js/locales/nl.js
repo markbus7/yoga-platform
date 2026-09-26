@@ -124,6 +124,7 @@ export const NL = {
   'prop.cushion': 'Kussen',
   'prop.chair': 'Stoel',
   'prop.spreaders': 'Teen\u00ADspreiders',
+  'prop.shakti': 'Spijker\u00ADmat',
 
   // routine
   'routine.dayOf': 'Dag {day} van 30',
@@ -283,6 +284,9 @@ export const NL = {
   'you.noVoiceLang': 'Er is geen Nederlandse stem gevonden op dit apparaat, dus je browser kiest er een. Een Nederlandse stem voeg je toe in de taalinstellingen van je telefoon of computer.',
   'you.chimes': 'Belletjes',
   'you.chimesText': 'Een zacht belletje als een houding begint, als je van kant wisselt en aan het eind.',
+  'you.gear': 'Je spullen',
+  'you.shakti': 'Spijker\u00ADmat',
+  'you.shaktiText': 'Je hebt een spijkermat, zoals een Shakti-mat. Voegt de routine Rust op de spijkermat toe, en samengestelde sessies kunnen hem gebruiken.',
   'you.spreaders': 'Teen\u00ADspreiders',
   'you.spreadersText': 'Je hebt teenspreiders. Tijdens een sessie krijg je een seintje om ze in te doen bij de liggende en zittende houdingen.',
   'you.checkins': 'Check-ins',

@@ -63,6 +63,12 @@ export const POSES = {
     ],
     glow: ['thighN', 'lumbar'],
   },
+  shaktistand: {
+    groundOn: FEET, lift: 4.2,
+    frames: [{ uarmN: 92, farmN: 90, uarmF: 90, farmF: 88 }],
+    props: [{ t: 'shakti', at: 'ankleN', dx: 4, w: 40 }],
+    glow: ['footN', 'footF'],
+  },
   foldtest: {
     groundOn: FEET, anchor: 'ankleN',
     frames: [
@@ -288,6 +294,15 @@ export const POSES = {
       { t: 'strap', from: 'wristF', to: 'toeN', z: 13 },
     ],
     glow: ['thighN'],
+  },
+  shaktirest: {
+    anchor: 'hip', lift: 4.2, beat: 3,
+    frames: [
+      { lumbar: -60, thorax: -64, neck: -70, head: -72, thighN: -40, shinN: 70, footN: 0, thighF: -38, shinF: 72, footF: 0, uarmN: 118, farmN: 170, handN: 180, uarmF: 116, farmF: 168, handF: 178 },
+      { ...SUPINE, ...KNEES_UP, thighN: -58, shinN: 64, thighF: -56, shinF: 66, uarmN: 14, farmN: 4, uarmF: 16, farmF: 5 },
+    ],
+    props: [{ t: 'shakti', at: 'waist', dx: -12, w: 68 }],
+    glow: ['thorax'],
   },
   legsupwall: {
     anchor: 'hip', beat: 3,

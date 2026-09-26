@@ -318,7 +318,8 @@ function boundsOf(sol) {
 /** Solve a pose and place it: feet (or whatever touches) on the floor, anchor joint held still. */
 function place(fig, pose) {
   let sol = solvePose(pose);
-  if (fig.view !== 'top') sol = shiftSolution(sol, 0, -lowestContact(sol, fig.groundOn));
+  // `lift` raises the body onto something lying on the floor (an acupressure mat).
+  if (fig.view !== 'top') sol = shiftSolution(sol, 0, -lowestContact(sol, fig.groundOn) - (fig.spec.lift || 0));
   if (fig.anchorPt) {
     const a = sol.pts[fig.anchor];
     if (a) sol = shiftSolution(sol, fig.anchorPt[0] - a[0], fig.view === 'top' ? fig.anchorPt[1] - a[1] : 0);
@@ -414,6 +415,11 @@ function placeProps(props, sol, top) {
       out.push({ t: 'strap', from: pr.from, to: pr.to, z: pr.z ?? 33 });
     } else if (pr.t === 'spreaders') {
       out.push({ t: 'spreaders' });
+    } else if (pr.t === 'shakti') {
+      const w = pr.w ?? 68;
+      const h = pr.h ?? 3.4;
+      const x = pt[0] + (pr.dx || 0) - w / 2;
+      out.push({ t: 'shakti', x, w, h, z: pr.z ?? 3, bbox: { x0: x, x1: x + w, y0: -h - 1, y1: 0 } });
     } else if (pr.t === 'chair') {
       const hip = sol.pts.hip;
       const seatY = hip[1] + 12;
@@ -528,6 +534,16 @@ export function shapesFor(fig, pose, glowKeys = []) {
       const x = pr.side === 'right' ? a[0] : 0;
       const w = pr.side === 'right' ? VIEW_W - a[0] : a[0];
       shapes.push({ key, z: -12, tag: 'rect', cls: 'fg-wall', attrs: { x: f(x), y: '0', width: f(Math.max(0, w)), height: f(a[1]) } });
+    } else if (pr.t === 'shakti') {
+      const a = T([pr.x, -pr.h]);
+      const w = pr.w * S;
+      const h = pr.h * S;
+      shapes.push({ key, z: pr.z, tag: 'rect', cls: 'fg-shakti', attrs: { x: f(a[0]), y: f(a[1]), width: f(w), height: f(h), rx: f(Math.min(h / 2, 1.2 * S)) } });
+      // a row of spikes along the top
+      let d = '';
+      const r = 1.05 * S;
+      for (let u = 2; u < pr.w - 1; u += 3.2) d += circlePath(T([pr.x + u, -pr.h - 0.35]), r);
+      shapes.push({ key: key + '-spikes', z: pr.z + 0.1, tag: 'path', cls: 'fg-spikes', attrs: { d } });
     } else if (pr.t === 'chair') {
       const y = T([0, pr.seatY])[1];
       const floor = T([0, 0])[1];

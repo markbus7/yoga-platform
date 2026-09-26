@@ -125,6 +125,7 @@ export const EN = {
   'prop.cushion': 'Cushion',
   'prop.chair': 'Chair',
   'prop.spreaders': 'Toe spreaders',
+  'prop.shakti': 'Acupressure mat',
 
   // routine
   'routine.dayOf': 'Day {day} of 30',
@@ -284,6 +285,9 @@ export const EN = {
   'you.noVoiceLang': 'No English voice was found on this device, so your browser picks one.',
   'you.chimes': 'Chimes',
   'you.chimesText': 'A soft bell when a pose starts, when to switch sides, and at the end.',
+  'you.gear': 'Your gear',
+  'you.shakti': 'Acupressure mat',
+  'you.shaktiText': 'You have an acupressure mat, like a Shakti mat. Adds the Acupressure Rest routine, and built sessions can use it.',
   'you.spreaders': 'Toe spreaders',
   'you.spreadersText': 'You have toe spreaders. Sessions remind you to put them in for the lying and seated holds.',
   'you.checkins': 'Check-ins',

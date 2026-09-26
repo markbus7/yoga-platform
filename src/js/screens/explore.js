@@ -15,7 +15,8 @@ const TABS = ['routines', 'exercises', 'videos'];
 const KINDS = ['all', 'flow', 'hold', 'breath'];
 
 function routinesTab(app) {
-  return html`<div class="routine-list">${ROUTINES.map((r) => routineCard(app, r, html`<span>${t('when.' + r.when)}</span>`))}</div>`;
+  const owned = ROUTINES.filter((r) => !r.gear || app.store.state.profile[r.gear]);
+  return html`<div class="routine-list">${owned.map((r) => routineCard(app, r, html`<span>${t('when.' + r.when)}</span>`))}</div>`;
 }
 
 function exercisesTab(app) {

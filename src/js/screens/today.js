@@ -58,7 +58,8 @@ export function render(app) {
   const prog = programStatus(state.program, today);
   const tipDay = hero.done ? hero.doneDay || prog.next : hero.day;
   const tip = tipDay ? PROGRAM.days[tipDay - 1].tip : [t('today.keepTitle'), t('today.keepText')];
-  const picks = PICKS[part].filter((id) => id !== r.id).slice(0, 4);
+  const pool = state.profile.shakti && (part === 'evening' || part === 'night') ? ['shakti', ...PICKS[part]] : PICKS[part];
+  const picks = pool.filter((id) => id !== r.id).slice(0, 4);
   const since = daysSinceCheck(state.tests, today);
   const stuck = app.ui.stuck;
   const greeting = t('greet.' + part);

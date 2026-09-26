@@ -124,6 +124,18 @@ export const ROUTINES = [
     items: [['longexhale', 60], ['child', 75], ['recbutterfly', 120], ['kneestochest', 45], ['twist', 50], ['legsupwall', 120], ['floormelt', 90]],
   },
   {
+    id: 'shakti',
+    gear: 'shakti',
+    feature: 'shaktirest',
+    name: 'Acupressure Rest',
+    tagline: 'A slow quarter of an hour on your acupressure mat',
+    when: 'evening',
+    style: 'gravity',
+    color: 'lilac',
+    about: 'Wake up your feet on the mat, then lie back on it and let the spikes and slow breathing melt the tension out of your back. Ends off the mat with a gentle twist and a last rest.',
+    items: [['shaktistand', 60], ['shaktirest', 420], ['kneestochest', 45], ['twist', 45], ['floormelt', 60]],
+  },
+  {
     id: 'deep',
     feature: 'wideleg',
     name: 'Full Body Deep',

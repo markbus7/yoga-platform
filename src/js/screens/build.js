@@ -25,6 +25,7 @@ export function items(app) {
     care: app.store.state.profile.care || [],
     seed: b.seed,
     scale: app.store.state.settings.hold,
+    have: { shakti: !!app.store.state.profile.shakti },
   });
 }
 

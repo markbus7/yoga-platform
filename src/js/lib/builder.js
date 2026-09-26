@@ -25,14 +25,15 @@ export function seededRandom(seed) {
  * @param {string[]} o.care    areas to go easy on (exercises flagged for them are left out)
  * @param {number}   o.seed
  * @param {number}   o.scale   hold length multiplier used for timing
+ * @param {object}   o.have    gear you own, e.g. {shakti: true}; exercises that need gear you lack are left out
  * @returns {{id: string, sec: number}[]}
  */
-export function buildCustom({ areas = [], minutes = 10, style = 'mix', place = 'mat', care = [], seed = 1, scale = 1 } = {}) {
+export function buildCustom({ areas = [], minutes = 10, style = 'mix', place = 'mat', care = [], seed = 1, scale = 1, have = {} } = {}) {
   const budget = minutes * 60;
   const rand = seededRandom(seed);
   const want = new Set(areas);
 
-  let pool = EXERCISES.filter((ex) => ex.kind !== 'breath');
+  let pool = EXERCISES.filter((ex) => ex.kind !== 'breath' && (!ex.gear || have[ex.gear]));
   pool = place === 'chair'
     ? pool.filter((ex) => ex.position === 'chair' || ex.anywhere || (ex.position === 'standing' && ex.id !== 'squat'))
     : pool.filter((ex) => ex.position !== 'chair' || ex.anywhere);

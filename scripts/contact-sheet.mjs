@@ -35,6 +35,7 @@ svg.fig{width:100%;height:auto;display:block;background:#F7F8F6;border-radius:6p
 .fg-strap{stroke:#FF6F3C;stroke-width:2.2;fill:none;stroke-linecap:round}
 .fg-glow{fill:#FF6F3C;opacity:.45}
 .fg-spreader{fill:#F4A06E;stroke:#D9804F;stroke-width:.6}.fg-spreader.far{opacity:.6}
+.fg-shakti{fill:#8C7FD0}.fg-spikes{fill:#E4DEFA}
 `;
 writeFileSync(out, `<!doctype html><meta charset="utf-8"><style>${css}</style><div class="grid">${cells.join('')}</div>`);
 console.log('wrote', out, cells.length, 'figures');

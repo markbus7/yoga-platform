@@ -10,6 +10,7 @@ export const ROUTINES_NL = {
   hipsback: { name: 'Heupen & onderrug', tagline: 'Maak een dag zitten ongedaan', about: 'Rustige bewegingen voor je onderrug, en daarna houdingen die de heupen openen die door zitten stijf worden.' },
   legs: { name: 'Benen & hamstrings', tagline: 'Kuiten, dijen en de achterkant van je benen', about: 'Eerst staande stretches, dan houdingen op de vloer voor de achterkant van je benen. Je knieën blijven de hele tijd zacht.' },
   feet: { name: 'Losse voeten', tagline: 'Tenen, voetzolen en enkels die de hele dag in schoenen zitten', about: 'Maakt stijve tenen en enkels wakker, rekt je voetzolen en je wreef, en laat je daarna uitrusten met je benen tegen de muur en je teen\u00ADspreiders in.' },
+  shakti: { name: 'Rust op de spijkermat', tagline: 'Een rustig kwartier op je spijkermat', about: 'Maak eerst je voeten wakker op de mat, ga er dan op liggen en laat de pinnen en je rustige adem de spanning uit je rug halen. Je eindigt naast de mat met een zachte draai en een laatste rustmoment.' },
   upper: { name: 'Bovenlijf ontspannen', tagline: 'Zwaarte\u00ADkracht\u00ADhoudingen voor een gebogen rug', about: 'Lange houdingen voor je borst, schouders en bovenrug. De borstopener op blokken is de ster.' },
   hipopener: { name: 'Diepe heup\u00ADontspanning', tagline: 'Langere houdingen voor koppige heupen', about: 'Gebruikt al je blokken. Bewaar deze voor als je een week of twee aan het oefenen bent.' },
   winddown: { name: 'Tot rust komen', tagline: 'Alles vertragen voor het slapen', about: 'Ademhaling en rustgevende houdingen om je lichaam en je hoofd uit te zetten. Doe het gerust in je pyjama.' },
@@ -123,6 +124,21 @@ export const GUIDE_NL = [
       ['Uit om te staan', 'Doe ze uit voor staande houdingen en voordat je op je tenen gaat knielen. Ze veranderen je balans.'],
     ],
     after: 'Heb je diabetes, een slechte doorbloeding, gevoelloze voeten of een pijnlijke knobbel bij je grote teen (hallux valgus)? Overleg dan eerst met je huisarts of een podotherapeut. Was ze af en toe in warm sop.',
+  },
+  {
+    id: 'shakti',
+    title: 'Je spijkermat',
+    body: [
+      'Een spijkermat, zoals jouw Shakti-mat, zit vol kleine plastic pinnen. Erop liggen prikt een minuut of twee, daarna voelen de meeste mensen warmte en een diepe rust door hun rug trekken. Een fijne manier om \'s avonds uit te schakelen.',
+      'Het onderzoek is klein en niet eenduidig, dus gebruik hem omdat het fijn voelt, niet als geneesmiddel.',
+    ],
+    list: [
+      ['Zo begin je', 'Houd een dun T-shirt aan en ga langzaam liggen. Vijf tot tien minuten is in het begin genoeg. Bouw op tot 20 minuten als je het fijn vindt.'],
+      ['Waar hij past', 'Rust op de spijkermat is een routine die om de mat heen is gebouwd. Voor het slapen erop liggen is een goede ruil voor scrollen.'],
+      ['Je voeten', 'Erop staan maakt je voetzolen wakker. Houd in het begin je sokken aan en houd je ergens aan vast.'],
+      ['Eraf komen', 'Rol op je zij en kom langzaam overeind. De rode puntjes op je huid zijn binnen een uur weg.'],
+    ],
+    after: 'Sla hem over bij wondjes, verbrande of geïrriteerde huid, als je snel blauwe plekken krijgt of bloedverdunners gebruikt, of als je zwanger bent. Ga er alleen op staan als je normaal gevoel in je voeten hebt. Twijfel je, vraag het dan aan je huisarts.',
   },
   {
     id: 'plan',
