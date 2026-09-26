@@ -42,6 +42,32 @@ function voiceBlock(settings) {
     <div class="row wrap"><div class="seg" role="group" aria-label="${t('you.voiceSpeed')}" style="flex:1">${RATES.map(([v, k]) => html`<button data-act="rate" data-v="${v}" aria-pressed="${settings.rate === v}">${t(k)}</button>`)}</div><button class="btn btn-small btn-ghost" data-act="test-voice">${raw(icon('volume'))} ${t('you.test')}</button></div></div>`;
 }
 
+const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Unstuck%20sync';
+
+function syncCard(app) {
+  const st = app.store.status;
+  const connected = app.store.syncConnected();
+  const err = st.sync === 'error' ? html`<p class="small sync-err" role="alert">${t('sync.err.' + st.syncError)}</p>` : '';
+  if (connected) {
+    const when = st.syncedAt ? new Date(st.syncedAt) : null;
+    const time = when ? `${when.getHours()}:${String(when.getMinutes()).padStart(2, '0')}` : '';
+    return html`<div class="sync-box">
+      <p class="t">${raw(icon(st.sync === 'on' ? 'check' : 'refresh'))} ${st.sync === 'on' ? t('sync.on', { time }) : st.sync === 'connecting' ? t('sync.connecting') : t('sync.title')}</p>
+      ${err}
+      <p class="small muted">${t('sync.where')}</p>
+      <div class="row wrap"><button class="btn btn-small btn-ghost" data-act="sync-now">${raw(icon('refresh'))} ${t('sync.now')}</button><button class="btn btn-small btn-ghost" data-act="sync-off">${t('sync.off')}</button></div>
+    </div>`;
+  }
+  return html`<div class="sync-box">
+    <p class="t">${t('sync.title')}</p>
+    <p class="small">${t('sync.intro')}</p>
+    <ol class="small sync-steps"><li>${raw(esc(t('sync.step1')).replace('{link}', `<a href="${TOKEN_URL}" target="_blank" rel="noopener noreferrer">${esc(t('sync.link'))}</a>`))}</li><li>${t('sync.step2')}</li></ol>
+    <div class="field"><label for="f-token" class="small">${t('sync.token')}</label><input id="f-token" class="input" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ghp_…"></div>
+    ${err}
+    <div><button class="btn btn-small" data-act="sync-connect" ${st.sync === 'connecting' ? raw('disabled') : ''}>${st.sync === 'connecting' ? t('sync.connecting') : t('sync.connect')}</button></div>
+  </div>`;
+}
+
 function credits() {
   const teachers = [...new Set(VIDEOS.map((v) => v.teacher).filter(Boolean))];
   const learn = LEARN_LINKS.map((l) => {
@@ -106,6 +132,7 @@ export function render(app) {
       <h2 class="section-title">${t('you.data')}</h2>
       <div class="card stack">
         <p>${where === 'cloud' ? html`${raw(icon('check'))} ${t('you.dataCloud')}` : t('you.dataLocal')}</p>
+        ${syncCard(app)}
         <div class="row wrap"><button class="btn btn-small btn-ghost" data-act="export">${raw(icon('copy'))} ${t('you.copy')}</button><button class="btn btn-small btn-ghost" data-act="import">${raw(icon('upload'))} ${t('you.restore')}</button><button class="btn btn-small btn-ghost" data-act="reset">${raw(icon('trash'))} ${t('you.reset')}</button></div>
       </div>
     </section>
@@ -159,6 +186,22 @@ export const actions = {
       unlockAudio();
       chime('start', app.store.state.settings.volume);
     }
+  },
+  async 'sync-connect'(app, el) {
+    const input = el.closest('.sync-box').querySelector('#f-token');
+    if (!input.value.trim()) {
+      input.focus();
+      return;
+    }
+    const ok = await app.store.connectSync(input.value);
+    if (ok) toast(t('sync.done'));
+  },
+  'sync-now'(app) {
+    app.store.syncNow();
+  },
+  async 'sync-off'(app) {
+    const ok = await ask(t('sync.offQ'), t('sync.offBody'), t('sync.off'), t('common.cancel'));
+    if (ok) app.store.disconnectSync();
   },
   shakti(app) {
     set(app, (s) => {

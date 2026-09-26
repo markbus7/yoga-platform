@@ -58,7 +58,7 @@ Spoken guidance uses a voice for the chosen language. Most phones and computers 
 
 In the repository settings, open **Pages** and set **Source** to **GitHub Actions**. After that, every push to `main` builds and publishes `dist/index.html` to `https://<owner>.github.io/<repo>/`. Until Pages is switched on, the **Deploy to GitHub Pages** workflow skips itself with a notice; run it again from the Actions tab once it is on.
 
-The public site saves progress in the browser it runs in (use Copy backup to move it). The claude.ai version saves to your Claude account and syncs between devices.
+The public site saves progress in the browser it runs in. To keep the same progress on several devices, open **You → Your data → Sync between devices** and paste a GitHub token (a classic token with only the `gist` scope) on each device: the app keeps a secret gist, `unstuck.json`, merges it with each device's copy and writes back after every change. The token is stored only in that browser and is never part of a backup. The claude.ai version saves to your Claude account instead.
 
 ## Project layout
 
