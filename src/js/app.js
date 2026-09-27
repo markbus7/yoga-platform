@@ -19,7 +19,7 @@ import { EXERCISE } from './data/exercises.js';
 import { AREA_NAME } from './data/areas.js';
 import { routineItems } from './lib/session.js';
 import { streak } from './lib/stats.js';
-import { dayKey } from './lib/dates.js';
+import { dayKey, setTimeZone, setDayParts } from './lib/dates.js';
 import { onVoicesChanged } from './lib/audio.js';
 import { holdScale } from './screens/common.js';
 import { t, lang, setLang, detectLang, inline } from './i18n.js';
@@ -80,6 +80,8 @@ export function createApp(root, store) {
 
   app.render = ({ keepScroll = false, focus = false } = {}) => {
     syncLang();
+    setTimeZone(store.state.settings.timeZone);
+    setDayParts(store.state.settings.dayParts);
     const scr = SCREENS[app.route.name] || today;
     const y = window.scrollY;
     view.innerHTML = String(scr.render(app, app.route));

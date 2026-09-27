@@ -10,6 +10,7 @@ import { voicesFor, speechAvailable, speak, unlockAudio, chime } from '../lib/au
 import { defaultState } from '../lib/store.js';
 import { EXERCISE } from '../data/exercises.js';
 import { t, lang, list, LANGS } from '../i18n.js';
+import { partOfDay, nowParts, deviceZone, validDayParts, DEFAULT_DAY_PARTS } from '../lib/dates.js';
 
 const GOALS = [5, 10, 15, 20, 30];
 const WHEN = [
@@ -68,6 +69,45 @@ function syncCard(app) {
   </div>`;
 }
 
+const PARTS = ['morning', 'afternoon', 'evening', 'night'];
+const pad2 = (n) => String(n).padStart(2, '0');
+let zoneList = null;
+function zones() {
+  if (!zoneList) {
+    try {
+      zoneList = Intl.supportedValuesOf('timeZone');
+    } catch {
+      zoneList = ['Europe/Amsterdam', 'Europe/Brussels', 'Europe/London', 'Europe/Lisbon', 'Europe/Madrid', 'Europe/Berlin', 'Europe/Athens', 'America/New_York', 'America/Chicago', 'America/Los_Angeles', 'America/Curacao', 'America/Paramaribo', 'Asia/Dubai', 'Asia/Bangkok', 'Asia/Jakarta', 'Asia/Tokyo', 'Australia/Sydney'];
+    }
+  }
+  return zoneList;
+}
+
+function timeCard(settings) {
+  const now = nowParts();
+  const chosen = settings.timeZone || '';
+  return html`<div class="card stack" style="--gap:14px">
+    <p class="small muted">${t('you.timeHint')}</p>
+    <div class="parts-grid">${PARTS.map((p) => html`<div class="field"><label for="f-${p}" class="small">${t('you.partStart.' + p)}</label><select id="f-${p}" class="input" data-field="part-${p}">${Array.from({ length: 24 }, (_, h) => html`<option value="${h}" ${settings.dayParts[p] === h ? raw('selected') : ''}>${pad2(h)}:00</option>`)}</select></div>`)}</div>
+    <div class="field"><label for="f-tz">${t('you.tz')}</label><select id="f-tz" class="input" data-field="timeZone"><option value="">${t('you.tzAuto', { zone: deviceZone() })}</option>${zones().map((z) => html`<option value="${z}" ${z === chosen ? raw('selected') : ''}>${z.replace(/_/g, ' ')}</option>`)}</select><span class="hint">${t('you.tzHint')}</span></div>
+    <p class="small"><strong>${t('you.nowIs', { time: `${pad2(now.h)}:${pad2(now.min)}`, part: t('part.' + partOfDay()) })}</strong></p>
+    <div><button class="link-btn" data-act="parts-reset">${t('you.partsReset')}</button></div>
+  </div>`;
+}
+
+function setPart(app, part, value) {
+  const next = { ...app.store.state.settings.dayParts, [part]: +value };
+  if (!validDayParts(next)) {
+    toast(t('you.partsBad'));
+    app.render({ keepScroll: true });
+    return;
+  }
+  app.store.update((s) => {
+    s.settings.dayParts = next;
+  });
+  app.render({ keepScroll: true });
+}
+
 function credits() {
   const teachers = [...new Set(VIDEOS.map((v) => v.teacher).filter(Boolean))];
   const learn = LEARN_LINKS.map((l) => {
@@ -108,6 +148,11 @@ export function render(app) {
         <div class="switch-row"><div><div class="t">${t('you.spreaders')}</div><div class="d">${t('you.spreadersText')}</div></div>${sw('spreaders', profile.spreaders, t('you.spreaders'))}</div>
         <div class="switch-row"><div><div class="t">${t('you.shakti')}</div><div class="d">${t('you.shaktiText')}</div></div>${sw('shakti', profile.shakti, t('you.shakti'))}</div>
       </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">${t('you.timeTitle')}</h2>
+      ${timeCard(settings)}
     </section>
 
     <section class="section">
@@ -202,6 +247,11 @@ export const actions = {
   async 'sync-off'(app) {
     const ok = await ask(t('sync.offQ'), t('sync.offBody'), t('sync.off'), t('common.cancel'));
     if (ok) app.store.disconnectSync();
+  },
+  'parts-reset'(app) {
+    app.store.update((s) => {
+      s.settings.dayParts = { ...DEFAULT_DAY_PARTS };
+    });
   },
   shakti(app) {
     set(app, (s) => {
@@ -303,6 +353,16 @@ export const actions = {
 
 /** Text fields save as you type (debounced by the app). */
 export const fields = {
+  'part-morning': (app, v) => setPart(app, 'morning', v),
+  'part-afternoon': (app, v) => setPart(app, 'afternoon', v),
+  'part-evening': (app, v) => setPart(app, 'evening', v),
+  'part-night': (app, v) => setPart(app, 'night', v),
+  timeZone(app, value) {
+    app.store.update((s) => {
+      s.settings.timeZone = value;
+    });
+    app.render({ keepScroll: true });
+  },
   name(app, value) {
     app.store.update((s) => {
       s.profile.name = value.slice(0, 40);
