@@ -11,21 +11,23 @@ import { dayKey, partOfDay, weekdayShort } from '../lib/dates.js';
 import { streak, week, programStatus, daysSinceCheck } from '../lib/stats.js';
 import { featured, routineMinutes, programDayInfo, longTitle } from './common.js';
 import { t, lang } from '../i18n.js';
+import { FOR_NOW, planForNow, alternatives } from '../lib/suggest.js';
 
+// Routines that suit each part of the day, best first. Today shows the first
+// four that are not already on screen.
 const PICKS = {
-  morning: ['wakeup', 'desk', 'breathe', 'neck'],
-  afternoon: ['desk', 'neck', 'breathe', 'hipsback'],
-  evening: ['gravity', 'winddown', 'hipsback', 'breathe'],
-  night: ['winddown', 'breathe', 'gravity', 'upper'],
+  morning: ['wakeup', 'desk', 'neck', 'feet', 'legs', 'hipsback', 'breathe'],
+  afternoon: ['desk', 'neck', 'feet', 'hipsback', 'legs', 'upper', 'breathe'],
+  evening: ['gravity', 'winddown', 'hipsback', 'upper', 'feet', 'hipopener', 'breathe'],
+  night: ['winddown', 'gravity', 'upper', 'hipsback', 'feet', 'breathe'],
 };
-const SUGGEST = { morning: 'wakeup', afternoon: 'desk', evening: 'gravity', night: 'winddown' };
 
 function heroFor(app, today) {
   const { state } = app.store;
   const prog = programStatus(state.program, today);
   const part = partOfDay();
   if (prog.finished) {
-    return { routine: ROUTINE[SUGGEST[part]], day: null, eyebrow: t('today.eyebrowFinished'), done: false };
+    return { routine: ROUTINE[FOR_NOW[part]], day: null, eyebrow: t('today.eyebrowFinished'), done: false };
   }
   if (prog.doneToday) {
     const doneDay = Object.entries(state.program.done).find(([, d]) => d === today);
@@ -33,8 +35,18 @@ function heroFor(app, today) {
     const info = programDayInfo(next);
     return { routine: ROUTINE[info.routine], day: next, eyebrow: t('today.eyebrowTomorrow', { day: next }), done: true, doneDay: doneDay ? +doneDay[0] : null };
   }
+  // Today's plan day, swapped for something that suits the moment when the
+  // planned routine is meant for another time (waking up late at night, say).
   const info = programDayInfo(prog.next);
-  return { routine: ROUTINE[info.routine], day: prog.next, eyebrow: t('today.eyebrowDay', { day: prog.next, week: info.week, name: info.weekInfo.name }), done: false };
+  const planned = ROUTINE[info.routine];
+  const now = ROUTINE[planForNow(planned.id, planned.when, part)];
+  return {
+    routine: now,
+    planned: now === planned ? null : planned,
+    day: prog.next,
+    eyebrow: t('today.eyebrowDay', { day: prog.next, week: info.week, name: info.weekInfo.name }),
+    done: false,
+  };
 }
 
 const stuckText = (stuck) => (stuck.size ? [...stuck].map((a) => AREA_NAME[a]).join(', ') : t('today.stuckNone'));
@@ -58,8 +70,10 @@ export function render(app) {
   const prog = programStatus(state.program, today);
   const tipDay = hero.done ? hero.doneDay || prog.next : hero.day;
   const tip = tipDay ? PROGRAM.days[tipDay - 1].tip : [t('today.keepTitle'), t('today.keepText')];
+  const alts = alternatives(r.id, part, hero.planned ? hero.planned.id : null);
+  const shown = new Set([r.id, ...alts.map((a) => a.id)]);
   const pool = state.profile.shakti && (part === 'evening' || part === 'night') ? ['shakti', ...PICKS[part]] : PICKS[part];
-  const picks = pool.filter((id) => id !== r.id).slice(0, 4);
+  const picks = pool.filter((id) => !shown.has(id)).slice(0, 4);
   const since = daysSinceCheck(state.tests, today);
   const stuck = app.ui.stuck;
   const greeting = t('greet.' + part);
@@ -94,8 +108,19 @@ export function render(app) {
       <span class="eyebrow">${hero.eyebrow}</span>
       <h2 class="${longTitle(r.name).trim()}">${r.name}</h2>
       <div class="meta"><span>${raw(icon('clock'))}${t('common.min', { n: routineMinutes(app, r, hero.day) })}</span><span>${raw(icon('layers'))}${STYLE_NAME[r.style]}</span><span>${t('count.exercises', { n: r.items.length })}</span></div>
+      ${hero.planned ? html`<p class="hero-note">${t('today.swapNote', { planned: hero.planned.name, when: t('fit.' + hero.planned.when), day: hero.day })}</p>` : ''}
       ${heroBody}
     </div>
+  </section>
+
+  <section class="alts" aria-labelledby="alts-h">
+    <h2 class="alts-title" id="alts-h">${t('today.altTitle')}</h2>
+    <div class="alt-list">${alts.map((a) => {
+      const p = ROUTINE[a.id];
+      const min = t('common.min', { n: routineMinutes(app, p, a.plan ? hero.day : undefined) });
+      const meta = a.plan ? `${t('today.altPlan', { day: hero.day })} · ${min}` : `${min} · ${t('when.' + p.when)}`;
+      return html`<button class="alt-card" data-go="routine:${p.id}" data-day="${a.plan ? hero.day : ''}"><span class="thumb on-color" data-color="${p.color}">${raw(figureThumb(featured(p).fig, { glow: false }))}</span><span><span class="n">${p.name}</span><span class="m">${meta}</span></span>${raw(icon('chev', 'chev'))}</button>`;
+    })}</div>
   </section>
 
   <button class="plan-row" data-go="plan" aria-label="${t('today.planAria', { n: prog.count })}">
