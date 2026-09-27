@@ -75,12 +75,6 @@ export const NL = {
   'today.stuckNone': 'Nog niets gekozen: je krijgt een sessie voor je hele lichaam.',
   'today.build': 'Stel mijn sessie samen',
   'today.altTitle': 'Of kies iets anders',
-  'today.altPlan': 'Telt als dag {day}',
-  'today.swapNote': '{planned} is meer iets voor {when}. Deze past nu beter en telt ook als dag {day}.',
-  'fit.morning': 'de ochtend',
-  'fit.day': 'overdag',
-  'fit.evening': 'de avond',
-  'fit.night': 'het slapengaan',
   'today.picks': 'Past nu goed',
   'today.allRoutines': 'Alle routines',
 

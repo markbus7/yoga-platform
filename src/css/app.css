@@ -547,7 +547,6 @@ textarea.input { min-height: 88px; resize: vertical; }
 .hero-actions .link-btn { color: inherit; }
 .hero-done { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .hero-done svg { width: 26px; height: 26px; }
-.hero-note { font-size: 14px; line-height: 1.4; opacity: 0.9; }
 
 /* other options right under the main card */
 .alts { margin-top: 14px; }
