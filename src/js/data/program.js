@@ -6,7 +6,7 @@ export const PROGRAM = {
   name: 'Unstuck 30',
   about: 'Thirty days, one short session a day. Week one teaches the moves, then the holds slowly get longer.',
   weeks: [
-    { n: 1, name: 'Wake up', hold: 0.85, about: 'Short sessions to learn the moves. Stay at a 4 out of 10.' },
+    { n: 1, name: 'First steps', hold: 0.85, about: 'Short sessions to learn the moves. Stay at a 4 out of 10.' },
     { n: 2, name: 'Loosen', hold: 1, about: 'Standard hold times. You will know most poses by now.' },
     { n: 3, name: 'Release', hold: 1.15, about: 'Holds get a little longer. Use blocks to stay relaxed.' },
     { n: 4, name: 'Unstuck', hold: 1.3, about: 'Your longest holds. Notice how different they feel from week one.' },

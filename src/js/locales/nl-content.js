@@ -28,7 +28,7 @@ export const STYLES_NL = {
 export const PROGRAM_NL = {
   about: 'Dertig dagen, één korte sessie per dag. In week één leer je de bewegingen, daarna worden de houdingen langzaam langer.',
   weeks: [
-    { name: 'Wakker worden', about: 'Korte sessies om de bewegingen te leren. Blijf bij een 4 van de 10.' },
+    { name: 'Eerste stappen', about: 'Korte sessies om de bewegingen te leren. Blijf bij een 4 van de 10.' },
     { name: 'Losser worden', about: 'Standaard houdtijden. De meeste houdingen ken je nu.' },
     { name: 'Loslaten', about: 'De houdingen worden iets langer. Gebruik blokken om ontspannen te blijven.' },
     { name: 'Los', about: 'Je langste houdingen. Merk op hoe anders ze nu aanvoelen dan in week één.' },

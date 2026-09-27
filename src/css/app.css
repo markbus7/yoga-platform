@@ -547,6 +547,25 @@ textarea.input { min-height: 88px; resize: vertical; }
 .hero-actions .link-btn { color: inherit; }
 .hero-done { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .hero-done svg { width: 26px; height: 26px; }
+.hero-note { font-size: 14px; line-height: 1.4; opacity: 0.9; }
+
+/* other options right under the main card */
+.alts { margin-top: 14px; }
+.alts-title { margin: 0 0 8px 2px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.alt-list { display: grid; gap: 8px; }
+@media (min-width: 720px) { .alt-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.alt-card {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid var(--line-soft); border-radius: var(--radius-m);
+  background: var(--surface); color: var(--ink);
+  text-align: left;
+}
+.alt-card .thumb { display: block; width: 64px; height: 52px; border-radius: 10px; overflow: hidden; }
+.alt-card .thumb svg { display: block; width: 100%; height: 100%; }
+.alt-card .n { display: block; font-weight: 800; font-size: 15px; line-height: 1.25; }
+.alt-card .m { display: block; font-size: 13px; color: var(--ink-2); }
+.alt-card .chev { width: 18px; height: 18px; color: var(--ink-3); }
 @media (min-width: 720px) {
   .hero { grid-template-columns: 1.1fr 1fr; align-items: stretch; }
   .hero-stage { order: 2; height: auto; min-height: 250px; }
