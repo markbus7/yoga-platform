@@ -53,3 +53,20 @@ test('the options under the main card always offer a way to wake up and to wind 
     for (const a of list) assert.ok(ROUTINE[a.id], a.id);
   }
 });
+
+test('the parts of the day and the time zone can be changed', async () => {
+  const d = await import('../src/js/lib/dates.js');
+  const noon = new Date(Date.UTC(2026, 8, 27, 12, 0));
+  d.setTimeZone('Asia/Tokyo');
+  assert.equal(d.nowParts(noon).h, 21, 'noon UTC is 21:00 in Tokyo');
+  d.setTimeZone('Not/AZone');
+  assert.equal(d.nowParts(noon).h, noon.getHours(), 'an unknown zone falls back to the device');
+  d.setTimeZone('');
+  d.setDayParts({ morning: 6, afternoon: 12, evening: 18, night: 23 });
+  assert.equal(d.partOfDay(new Date(2026, 8, 27, 22, 30)), 'evening');
+  assert.equal(d.partOfDay(new Date(2026, 8, 27, 5, 30)), 'night');
+  assert.equal(d.validDayParts({ morning: 9, afternoon: 8, evening: 18, night: 23 }), false);
+  d.setDayParts({ morning: 9, afternoon: 8, evening: 18, night: 23 });
+  assert.equal(d.partOfDay(new Date(2026, 8, 27, 22, 30)), 'night', 'out-of-order times fall back to the standard ones');
+  d.setDayParts(d.DEFAULT_DAY_PARTS);
+});

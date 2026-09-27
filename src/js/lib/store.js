@@ -13,7 +13,7 @@ export function defaultState() {
   return {
     v: 1,
     profile: { name: '', goal: 15, when: 'evening', care: [], blocks: 4, strap: false, wall: true, chair: true, spreaders: true, shakti: true },
-    settings: { lang: '', hold: 1, voice: true, voices: { en: '', nl: '' }, rate: 1, chime: true, volume: 0.7, transition: 8, checkins: true },
+    settings: { lang: '', hold: 1, voice: true, voices: { en: '', nl: '' }, rate: 1, chime: true, volume: 0.7, transition: 8, checkins: true, timeZone: '', dayParts: { morning: 5, afternoon: 12, evening: 17, night: 22 } },
     program: { startedAt: null, done: {} },
     sessions: [],
     tests: [],
@@ -30,6 +30,7 @@ export function normalize(input) {
   const settings = { ...d.settings, ...(s.settings || {}) };
   // Older saves kept one English voice in `voiceURI`.
   settings.voices = { ...d.settings.voices, ...(settings.voices || {}) };
+  settings.dayParts = { ...d.settings.dayParts, ...(settings.dayParts || {}) };
   if (settings.voiceURI && !settings.voices.en) settings.voices.en = settings.voiceURI;
   delete settings.voiceURI;
   return {
