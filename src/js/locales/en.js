@@ -76,12 +76,6 @@ export const EN = {
   'today.stuckNone': 'Nothing picked yet: you will get a whole-body session.',
   'today.build': 'Build my session',
   'today.altTitle': 'Or pick something else',
-  'today.altPlan': 'Counts as day {day}',
-  'today.swapNote': '{planned} is more of a {when} routine. This one suits now and still counts as day {day}.',
-  'fit.morning': 'morning',
-  'fit.day': 'daytime',
-  'fit.evening': 'evening',
-  'fit.night': 'bedtime',
   'today.picks': 'Good for right now',
   'today.allRoutines': 'All routines',
 

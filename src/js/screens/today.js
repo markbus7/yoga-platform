@@ -108,7 +108,6 @@ export function render(app) {
       <span class="eyebrow">${hero.eyebrow}</span>
       <h2 class="${longTitle(r.name).trim()}">${r.name}</h2>
       <div class="meta"><span>${raw(icon('clock'))}${t('common.min', { n: routineMinutes(app, r, hero.day) })}</span><span>${raw(icon('layers'))}${STYLE_NAME[r.style]}</span><span>${t('count.exercises', { n: r.items.length })}</span></div>
-      ${hero.planned ? html`<p class="hero-note">${t('today.swapNote', { planned: hero.planned.name, when: t('fit.' + hero.planned.when), day: hero.day })}</p>` : ''}
       ${heroBody}
     </div>
   </section>
@@ -117,8 +116,7 @@ export function render(app) {
     <h2 class="alts-title" id="alts-h">${t('today.altTitle')}</h2>
     <div class="alt-list">${alts.map((a) => {
       const p = ROUTINE[a.id];
-      const min = t('common.min', { n: routineMinutes(app, p, a.plan ? hero.day : undefined) });
-      const meta = a.plan ? `${t('today.altPlan', { day: hero.day })} · ${min}` : `${min} · ${t('when.' + p.when)}`;
+      const meta = `${t('common.min', { n: routineMinutes(app, p, a.plan ? hero.day : undefined) })} · ${t('when.' + p.when)}`;
       return html`<button class="alt-card" data-go="routine:${p.id}" data-day="${a.plan ? hero.day : ''}"><span class="thumb on-color" data-color="${p.color}">${raw(figureThumb(featured(p).fig, { glow: false }))}</span><span><span class="n">${p.name}</span><span class="m">${meta}</span></span>${raw(icon('chev', 'chev'))}</button>`;
     })}</div>
   </section>
