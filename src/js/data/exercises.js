@@ -6,7 +6,7 @@
 //        'breath' breathing only
 // sec:   default time at the "Standard" hold length (per side when `sides`)
 
-import { POSES } from '../figure/poses.js';
+import { POSES, ALT_VIEWS } from '../figure/poses.js';
 
 export const EXERCISES = [
   // ---------------- moving stretches ----------------
@@ -1114,7 +1114,10 @@ export const EXERCISES = [
 const FIGURE_FOR = { sigh: 'easyseat', longexhale: 'easyseat', boxbreath: 'easyseat' };
 
 for (const ex of EXERCISES) {
-  ex.fig = POSES[FIGURE_FOR[ex.id] || ex.id];
+  const figId = FIGURE_FOR[ex.id] || ex.id;
+  ex.fig = POSES[figId];
+  // Camera angles: the main figure first, then any extra views (see ALT_VIEWS).
+  ex.views = [ex.fig, ...(ALT_VIEWS[figId] || [])];
   if (!ex.sideLabels) ex.sideLabels = ['Left side', 'Right side'];
   if (!ex.props) ex.props = [];
 }
@@ -1123,17 +1126,24 @@ export const EXERCISE = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
 
 const spreaderFigs = new WeakMap();
 /**
- * The figure to show for an exercise. Holds where your feet are free
- * (`spreaders: true`) show toe spreaders when you have them.
+ * The figure to show for an exercise, from camera angle `view` (an index into
+ * `ex.views`). Holds where your feet are free (`spreaders: true`) show toe
+ * spreaders when you have them.
  */
-export function figureFor(ex, spreaders = false) {
-  if (!spreaders || !ex.spreaders) return ex.fig;
-  let spec = spreaderFigs.get(ex.fig);
+export function figureFor(ex, spreaders = false, view = 0) {
+  const base = ex.views[view] || ex.fig;
+  if (!spreaders || !ex.spreaders) return base;
+  let spec = spreaderFigs.get(base);
   if (!spec) {
-    spec = { ...ex.fig, props: [...(ex.fig.props || []), { t: 'spreaders' }] };
-    spreaderFigs.set(ex.fig, spec);
+    spec = { ...base, props: [...(base.props || []), { t: 'spreaders' }] };
+    spreaderFigs.set(base, spec);
   }
   return spec;
+}
+
+/** Which way the camera looks for each of an exercise's views: 'side', 'front' or 'top'. */
+export function viewKinds(ex) {
+  return ex.views.map((v) => v.view || 'side');
 }
 
 export function videoSearchUrl(ex) {

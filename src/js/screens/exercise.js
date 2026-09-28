@@ -7,6 +7,7 @@ import { EXERCISE, videoSearchUrl, figureFor } from '../data/exercises.js';
 import { ROUTINES } from '../data/routines.js';
 import { AREA_NAME, POSITIONS, CARE_AREAS } from '../data/areas.js';
 import { topBar, kindTag, itemTime } from './common.js';
+import { viewPick, viewOf } from '../ui/viewpick.js';
 import { t, list } from '../i18n.js';
 
 export function render(app, route) {
@@ -21,6 +22,7 @@ export function render(app, route) {
     <div class="detail-grid">
       <div class="stage" aria-label="${t('ex.animationOf', { name: ex.name })}">
         <div class="stage-fig" data-ex-fig></div>
+        ${raw(viewPick(ex, viewOf(app, ex)))}
         <div class="stage-tools">
           ${ex.sides ? html`<button class="icon-btn" data-act="mirror" aria-pressed="false" aria-label="${t('ex.otherSide')}">${raw(icon('mirror'))}</button>` : ''}
           <button class="icon-btn" data-act="pause-fig" aria-label="${t('ex.pauseAnim')}">${raw(icon('pause'))}</button>
@@ -67,10 +69,19 @@ export function render(app, route) {
 export function mount(app, root, route) {
   const ex = EXERCISE[route.arg];
   const host = root.querySelector('[data-ex-fig]');
-  if (ex && host) app.ui.detailFig = mountFigure(host, figureFor(ex, app.store.state.profile.spreaders), { mode: 'preview', label: ex.name });
+  if (ex && host) app.ui.detailFig = mountFigure(host, figureFor(ex, app.store.state.profile.spreaders, viewOf(app, ex)), { mode: 'preview', label: ex.name });
 }
 
 export const actions = {
+  view(app, el) {
+    const ex = EXERCISE[app.route.arg];
+    const v = +el.dataset.v;
+    if (!ex || !app.ui.detailFig) return;
+    app.ui.views[ex.id] = v;
+    el.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.v === v)));
+    const mirrored = document.querySelector('.stage [data-act="mirror"][aria-pressed="true"]');
+    app.ui.detailFig.setSpec(figureFor(ex, app.store.state.profile.spreaders, v), { mode: 'preview', mirror: !!mirrored });
+  },
   mirror(app, el) {
     const on = el.getAttribute('aria-pressed') !== 'true';
     el.setAttribute('aria-pressed', String(on));

@@ -564,3 +564,143 @@ export const POSES = {
     glow: ['footN', 'shinN'],
   },
 };
+
+// ---------- second camera angles ----------
+// Extra views for exercises where one angle hides something important (how
+// wide the knees go, where a shin lies). Each lists the same moves as the
+// main figure, so the enter animation and timing match.
+const UNDER_LEGS = ['shinL', 'shinR', 'footL', 'footR'];
+
+export const ALT_VIEWS = {
+  child: [{
+    view: 'top', anchor: 'kneeR', beat: 3,
+    frames: [
+      {
+        lumbar: 180, thorax: 180, neck: 180, head: 180,
+        thighR: -90, thighL: 90, shinR: 26.6, shinL: -26.6, footR: 39, footL: -39,
+        uarmR: 180, farmR: 180, handR: 180, uarmL: 180, farmL: 180, handL: 180,
+        sc: { thighR: 0.49, thighL: 0.49, footR: 0.84, footL: 0.84, uarmR: 0.08, farmR: 0.08, uarmL: 0.08, farmL: 0.08 },
+        behind: UNDER_LEGS,
+      },
+      {
+        lumbar: 180, thorax: 180, neck: 180, head: 180,
+        thighR: -150.5, thighL: 150.5, shinR: 26.6, shinL: -26.6, footR: 39, footL: -39,
+        uarmR: 185, farmR: 182, handR: 180, uarmL: 175, farmL: 178, handL: 180,
+        sc: { lumbar: 0.96, thorax: 0.96, thighR: 0.99, thighL: 0.99, footR: 0.84, footL: 0.84 },
+        behind: UNDER_LEGS,
+      },
+    ],
+    glow: ['back', 'hip'],
+  }],
+  squat: [{
+    view: 'front', groundOn: FRONT_FEET, beat: 2.8,
+    frames: [
+      { thighR: 82, shinR: 83, thighL: 98, shinL: 97 },
+      {
+        sc: { lumbar: 0.95, thorax: 0.92, thighR: 0.55, thighL: 0.55, shinR: 0.97, shinL: 0.97, handR: 0.9, handL: 0.9 },
+        thighR: -19, thighL: 199, shinR: 101, shinL: 79,
+        uarmR: 71, farmR: 211, handR: 265, uarmL: 109, farmL: -31, handL: -85,
+        front: ['armR', 'armL'],
+      },
+    ],
+    props: [{ t: 'block', under: 'hip', w: 23 }],
+    glow: ['thighR', 'thighL'],
+  }],
+  pigeon: [{
+    view: 'top', beat: 3,
+    frames: [
+      {
+        lumbar: 180, thorax: 180, neck: 180, head: 180,
+        thighR: -158, thighL: 3, shinR: -2, shinL: 2, footR: 0, footL: 0,
+        uarmR: -125, farmR: -125, handR: 180, uarmL: 180, farmL: 180, handL: 180,
+        sc: { thighR: 0.1, thighL: 0.1, footR: 0.85, footL: 0.85, uarmR: 0.08, farmR: 0.08, uarmL: 0.08, farmL: 0.08 },
+      },
+      {
+        lumbar: 180, thorax: 180, neck: 180, head: 180,
+        thighR: -158, shinR: 80, footR: 95, thighL: 3, shinL: 2, footL: 0,
+        uarmR: -125, farmR: -125, handR: 180, uarmL: 125, farmL: 125, handL: 180,
+        sc: { lumbar: 0.08, thorax: 0.08, neck: 0.5, thighR: 0.95, shinR: 0.97, footR: 0.55, thighL: 0.95, footL: 0.85, uarmR: 0.25, farmR: 0.1, uarmL: 0.25, farmL: 0.1 },
+      },
+    ],
+    glow: ['hip', 'thighR'],
+  }],
+  butterfly: [{
+    anchor: 'hip', beat: 2.8,
+    frames: [
+      {
+        lumbar: -88, thorax: -90, neck: -90, head: -88,
+        thighN: 24, shinN: 172, footN: -12, thighF: 20, shinF: 174, footF: -10,
+        uarmN: 72, farmN: 50, handN: 30, uarmF: 74, farmF: 52, handF: 32,
+        sc: { thighN: 0.62, shinN: 0.56, footN: 0.55, thighF: 0.6, shinF: 0.54, footF: 0.55 },
+      },
+      {
+        lumbar: -52, thorax: -28, neck: 2, head: 22,
+        thighN: 24, shinN: 172, footN: -12, thighF: 20, shinF: 174, footF: -10,
+        uarmN: 96, farmN: 70, handN: 40, uarmF: 98, farmF: 72, handF: 42,
+        sc: { thighN: 0.62, shinN: 0.56, footN: 0.55, thighF: 0.6, shinF: 0.54, footF: 0.55 },
+      },
+    ],
+    props: [{ t: 'block', under: 'hip', w: 23 }],
+    glow: ['lumbar', 'thighN'],
+  }],
+  wideleg: [{
+    anchor: 'hip', beat: 2.8,
+    frames: [
+      {
+        lumbar: -88, thorax: -90, neck: -90, head: -88,
+        thighN: 8, shinN: 8, footN: -60, thighF: 4, shinF: 4, footF: -64,
+        uarmN: 96, farmN: 94, handN: 20, uarmF: 98, farmF: 96, handF: 22,
+        sc: { thighN: 0.72, shinN: 0.72, thighF: 0.72, shinF: 0.72 },
+      },
+      {
+        lumbar: -52, thorax: -34, neck: -24, head: -12,
+        thighN: 8, shinN: 8, footN: -60, thighF: 4, shinF: 4, footF: -64,
+        uarmN: 72, farmN: 64, handN: 4, uarmF: 74, farmF: 66, handF: 6,
+        sc: { thighN: 0.72, shinN: 0.72, thighF: 0.72, shinF: 0.72 },
+      },
+    ],
+    props: [
+      { t: 'block', under: 'hip', w: 23 },
+      { t: 'block', under: 'wristN', w: 15, layer: 'near' },
+    ],
+    glow: ['lumbar', 'thighN'],
+  }],
+  constructive: [{
+    view: 'top',
+    frames: [{
+      lumbar: 180, thorax: 180, neck: 180, head: 180,
+      thighR: 13, thighL: -13, shinR: -38, shinL: 38, footR: 6, footL: -6,
+      uarmR: -8, farmR: 128, handR: 150, uarmL: 8, farmL: -128, handL: -150,
+      sc: { thighR: 0.63, thighL: 0.63, shinR: 0.69, shinL: 0.69, footR: 0.9, footL: 0.9, farmR: 0.8, farmL: 0.8 },
+    }],
+    glow: [],
+  }],
+  figurefour: [{
+    anchor: 'hip', beat: 2.8,
+    frames: [
+      { ...SUPINE, ...KNEES_UP, uarmN: 12, farmN: 3, uarmF: 14, farmF: 4 },
+      {
+        ...SUPINE,
+        thighF: -115, shinF: -12, footF: -95,
+        thighN: -63, shinN: 186, footN: -100,
+        uarmN: -30, farmN: -30, handN: -40, uarmF: -28, farmF: -28, handF: -38,
+        sc: { thighN: 0.76, shinN: 0.72, footN: 0.6 },
+      },
+    ],
+    glow: ['thighN', 'hip'],
+  }],
+  chairfour: [{
+    groundOn: ['ankleF', 'toeF'], beat: 2.6,
+    frames: [
+      { ...CHAIR_SIDE },
+      {
+        ...CHAIR_SIDE, lumbar: -62, thorax: -42, neck: -30, head: -18,
+        thighN: -8, shinN: -6, footN: -60,
+        uarmN: 70, farmN: 10, handN: 0, uarmF: 72, farmF: 12, handF: 0,
+        sc: { thighN: 0.55, shinN: 0.4, footN: 0.6 },
+      },
+    ],
+    props: [{ t: 'chair' }],
+    glow: ['hip', 'thighN'],
+  }],
+};

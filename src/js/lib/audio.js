@@ -2,6 +2,25 @@
 
 let ctx = null;
 
+/** The shared AudioContext once a tap has unlocked sound, else null. */
+export function audioCtx() {
+  return ctx;
+}
+
+// Told when the voice starts and stops, so background sound can dip under it.
+let speechListener = null;
+let speechTimer = 0;
+let current = null;
+export function onSpeech(fn) {
+  speechListener = fn;
+}
+function speaking(on, text = '') {
+  clearTimeout(speechTimer);
+  if (speechListener) speechListener(on);
+  // Some browsers never report the end of an utterance; give up after a while.
+  if (on) speechTimer = setTimeout(() => speaking(false), 1500 + text.length * 90);
+}
+
 /** Call from a tap: browsers only allow sound after the viewer interacts. */
 export function unlockAudio() {
   try {
@@ -104,6 +123,14 @@ export function speak(text, { voiceURI = '', rate = 1, lang = 'en' } = {}) {
     } else u.lang = lang === 'nl' ? 'nl-NL' : 'en-GB';
     u.rate = rate * 0.95;
     u.pitch = 1;
+    // A cancelled utterance reports its end after the next one has started.
+    const done = () => {
+      if (current === u) speaking(false);
+    };
+    u.onend = done;
+    u.onerror = done;
+    current = u;
+    speaking(true, text);
     speechSynthesis.speak(u);
   } catch {
     /* speech failed; the screen still shows the cue */
@@ -112,6 +139,8 @@ export function speak(text, { voiceURI = '', rate = 1, lang = 'en' } = {}) {
 
 export function stopSpeaking() {
   if (!speechAvailable()) return;
+  current = null;
+  speaking(false);
   try {
     speechSynthesis.cancel();
   } catch {
