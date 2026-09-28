@@ -42,7 +42,11 @@ export function unlockAudio() {
   }
 }
 
-/** kinds: 'start' (a pose begins), 'next' (get ready), 'switch', 'done' */
+/**
+ * kinds: 'start' (a hold begins: two rising notes), 'end' (it is over, come
+ * out: two falling notes; 'switch' is the same), 'next' (a soft note: the next
+ * exercise is coming), 'tick' (3-2-1 before a start), 'done' (session over)
+ */
 export function chime(kind = 'start', volume = 0.7) {
   if (!ctx || volume <= 0) return;
   try {
@@ -69,10 +73,17 @@ export function chime(kind = 'start', volume = 0.7) {
       tone(f * 2.76, start, 1.8, 0.1 * amp);
       tone(f * 5.4, start, 0.9, 0.04 * amp);
     };
-    if (kind === 'start') bell(523.25, 0);
-    else if (kind === 'next') bell(392, 0, 0.75);
-    else if (kind === 'switch') bell(440, 0, 0.8);
-    else if (kind === 'done') {
+    if (kind === 'start') {
+      bell(392, 0, 0.8);
+      bell(523.25, 0.18);
+    } else if (kind === 'end' || kind === 'switch') {
+      bell(523.25, 0, 0.9);
+      bell(392, 0.22, 0.85);
+    } else if (kind === 'next') bell(659.25, 0, 0.5);
+    else if (kind === 'tick') {
+      tone(1318.5, 0, 0.09, 0.08);
+      tone(2637, 0, 0.05, 0.025);
+    } else if (kind === 'done') {
       bell(392, 0);
       bell(523.25, 0.4);
       bell(659.25, 0.8);
