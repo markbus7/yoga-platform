@@ -35,6 +35,22 @@ export function positionRank(p) {
  *   switch  a short pause to change sides
  *   move    time to get into the next exercise (longer when the position changes)
  */
+/** Sessions with at least this many seconds in an exercise count as having done it. */
+const DONE_SEC = 15;
+/** "Until I know it" shows the how-to for your first few times. */
+export const DEMO_TIMES = 3;
+
+export function timesDone(sessions, id) {
+  return sessions.filter((s) => s.ex && s.ex[id] >= DONE_SEC).length;
+}
+
+/** Should the player stop and show how to do this exercise before timing it? */
+export function needsDemo(id, settings, sessions) {
+  if (settings.demo === 'off') return false;
+  if (settings.demo === 'always') return true;
+  return !settings.known.includes(id) && timesDone(sessions, id) < DEMO_TIMES;
+}
+
 export function buildTimeline(items, { scale = 1, transition = 8 } = {}) {
   const steps = [];
   let prevPos = null;

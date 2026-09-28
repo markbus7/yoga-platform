@@ -51,3 +51,19 @@ test('care areas and place are respected', () => {
 test('the same seed gives the same session', () => {
   assert.deepEqual(buildCustom({ minutes: 10, seed: 42 }), buildCustom({ minutes: 10, seed: 42 }));
 });
+
+test('the how-to shows until you have done an exercise a few times, or until you say you know it', async () => {
+  const { needsDemo, DEMO_TIMES } = await import('../src/js/lib/session.js');
+  const { normalize } = await import('../src/js/lib/store.js');
+  const settings = normalize({}).settings;
+  assert.equal(settings.demo, 'new');
+  assert.deepEqual(settings.known, []);
+  const done = (n) => Array.from({ length: n }, () => ({ ex: { child: 60 } }));
+  assert.equal(needsDemo('child', settings, []), true);
+  assert.equal(needsDemo('child', settings, done(DEMO_TIMES - 1)), true);
+  assert.equal(needsDemo('child', settings, done(DEMO_TIMES)), false);
+  assert.equal(needsDemo('child', { ...settings, known: ['child'] }, []), false);
+  assert.equal(needsDemo('child', { ...settings, demo: 'always' }, done(9)), true);
+  assert.equal(needsDemo('child', { ...settings, demo: 'off' }, []), false);
+  assert.equal(normalize({ settings: { demo: 'bogus', known: 'x' } }).settings.demo, 'new');
+});
