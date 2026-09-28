@@ -24,7 +24,7 @@ test('changing position gives a longer transition', () => {
 });
 
 test('built sessions fit the time budget', () => {
-  for (const minutes of [5, 10, 15, 20]) {
+  for (const minutes of [5, 10, 15, 20, 30, 40]) {
     for (const style of ['mix', 'moving', 'gravity']) {
       const items = buildCustom({ minutes, style, areas: ['hips', 'lowerBack'], seed: 7 });
       const sec = estimateSeconds(items);

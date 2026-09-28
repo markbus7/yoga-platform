@@ -145,6 +145,7 @@ export const EN = {
   'build.style': 'Style',
   'build.where': 'Where',
   'build.minutesAria': 'Minutes',
+  'build.movingMax': 'Moving only works up to 20 minutes. Pick Mix or Gravity holds for longer.',
   'build.style.mix': 'Mix',
   'build.style.moving': 'Moving',
   'build.style.gravity': 'Gravity holds',
