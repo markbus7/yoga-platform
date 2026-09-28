@@ -7,7 +7,7 @@ import { GUIDE } from '../data/guide.js';
 import { VIDEOS, LEARN_LINKS } from '../data/videos.js';
 import { HOLD_LENGTHS } from '../lib/session.js';
 import { voicesFor, speechAvailable, speak, unlockAudio, chime } from '../lib/audio.js';
-import { defaultState } from '../lib/store.js';
+import { defaultState, DEMO_MODES } from '../lib/store.js';
 import { EXERCISE } from '../data/exercises.js';
 import { t, lang, list, LANGS } from '../i18n.js';
 import { partOfDay, nowParts, deviceZone, validDayParts, DEFAULT_DAY_PARTS } from '../lib/dates.js';
@@ -164,6 +164,7 @@ export function render(app) {
         ${voiceBlock(settings)}
         <div class="switch-row"><div><div class="t">${t('you.chimes')}</div><div class="d">${t('you.chimesText')}</div></div>${sw('chime', settings.chime, t('you.chimes'))}</div>
         <div class="switch-row"><div><div class="t">${t('you.checkins')}</div><div class="d">${t('you.checkinsText')}</div></div>${sw('checkins', settings.checkins, t('you.checkins'))}</div>
+        <div class="switch-row" style="display:block"><div class="t">${t('you.demo')}</div><div class="d" style="margin-bottom:8px">${t('you.demoText')}</div><div class="seg" role="group" aria-label="${t('you.demo')}">${DEMO_MODES.map((v) => html`<button data-act="demo" data-v="${v}" aria-pressed="${settings.demo === v}">${t('you.demo.' + v)}</button>`)}</div>${settings.known.length && settings.demo === 'new' ? html`<p class="small muted" style="margin-top:8px">${t('you.known', { n: settings.known.length })} <button class="link-btn" data-act="known-reset">${t('you.knownReset')}</button></p>` : ''}</div>
         <div class="switch-row" style="display:block"><div class="t" style="margin-bottom:8px">${t('you.transition')}</div><div class="seg" role="group" aria-label="${t('you.transition')}">${TRANSITIONS.map(([v, k]) => html`<button data-act="transition" data-v="${v}" aria-pressed="${settings.transition === v}">${t(k)} · ${v}s</button>`)}</div></div>
       </div>
     </section>
@@ -266,6 +267,16 @@ export const actions = {
   checkins(app) {
     set(app, (s) => {
       s.settings.checkins = !s.settings.checkins;
+    });
+  },
+  demo(app, el) {
+    set(app, (s) => {
+      s.settings.demo = el.dataset.v;
+    });
+  },
+  'known-reset'(app) {
+    set(app, (s) => {
+      s.settings.known = [];
     });
   },
   transition(app, el) {

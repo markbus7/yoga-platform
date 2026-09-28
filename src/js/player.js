@@ -1,7 +1,7 @@
 // The full-screen guided session: check-in, timed poses with voice and chimes,
 // then a check-out that saves the session to your progress.
 
-import { buildTimeline, timelineSeconds } from './lib/session.js';
+import { buildTimeline, timelineSeconds, needsDemo } from './lib/session.js';
 import { mountFigure } from './ui/figure-view.js';
 import { icon } from './ui/icons.js';
 import { esc } from './ui/dom.js';
@@ -37,6 +37,11 @@ class Player {
     // Toe spreaders: remind once, as you set up the first hold where your feet are free.
     this.spreaders = !!app.store.state.profile.spreaders;
     this.spreaderStep = this.spreaders ? this.steps.findIndex((st) => st.type === 'move' && st.ex.spreaders) : -1;
+    // Exercises to show step by step before the clock starts (see Settings).
+    const { sessions } = app.store.state;
+    this.demoFor = new Set(this.steps.filter((st) => st.type === 'move' && needsDemo(st.ex.id, s, sessions)).map((st) => st.ex.id));
+    this.demoShown = new Set();
+    this.learning = null;
     this.i = 0;
     this.elapsed = 0;
     this.active = 0;
@@ -152,6 +157,7 @@ class Player {
     if (index >= this.steps.length) return this.finish();
     const st = this.steps[index];
     const ex = st.ex;
+    if (st.type === 'move' && this.demoFor.has(ex.id) && !this.demoShown.has(ex.id)) return this.showDemo(index);
     const isBreath = ex.kind === 'breath';
     const nextPose = this.steps.slice(index + 1).find((x) => x.type === 'move');
 
@@ -205,6 +211,66 @@ class Player {
     this.paint(true);
   }
 
+  // ---------- how-to, before the clock starts ----------
+
+  showDemo(index) {
+    const st = this.steps[index];
+    const ex = st.ex;
+    this.learning = index;
+    this.i = index;
+    this.elapsed = 0;
+    if (!this.paused) this.toggle();
+    const exNum = this.steps.slice(0, index + 1).filter((x) => x.type === 'move').length;
+    const tip = (label, text) => (text ? `<div class="learn-tip"><b>${esc(label)}</b> ${esc(text)}</div>` : '');
+    const box = document.createElement('div');
+    box.className = 'learn';
+    box.setAttribute('role', 'group');
+    box.setAttribute('aria-label', t('learn.title'));
+    box.innerHTML = `
+      <div class="player-top">
+        <button class="icon-btn" data-p="close" aria-label="${esc(t('player.end'))}">${icon('close')}</button>
+        <div class="grow">${esc(t('player.count', { n: exNum, total: this.exCount }))}</div>
+        <span style="width:44px"></span>
+      </div>
+      <div class="learn-body">
+        <div class="learn-fig" data-learn-fig></div>
+        <span class="kicker">${esc(t('learn.title'))}</span>
+        <h2 tabindex="-1">${esc(ex.name)}</h2>
+        <ol class="learn-steps">${ex.setup.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+        ${ex.sides ? `<p class="learn-note">${esc(t('learn.sides', { a: ex.sideLabels[0], b: ex.sideLabels[1] }))}</p>` : ''}
+        ${tip(t('ex.feelIt') + ':', ex.feel)}
+        ${tip(t('ex.easier') + ':', ex.easier)}
+      </div>
+      <div class="learn-actions">
+        <button class="btn btn-lg btn-wide" data-p="learn-go">${icon('play')} ${esc(t('learn.go'))}</button>
+        <button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>
+      </div>`;
+    this.el.appendChild(box);
+    this.learnFig = mountFigure(box.querySelector('[data-learn-fig]'), figureFor(ex, this.spreaders), { mode: 'preview', label: ex.name });
+    box.querySelector('h2').focus({ preventScroll: true });
+    if (this.sound && this.voice) speak([ex.name + '.', ...ex.setup].join(' '), this.voiceOpts());
+  }
+
+  endDemo(known = false) {
+    const index = this.learning;
+    if (index === null) return;
+    const id = this.steps[index].ex.id;
+    this.demoShown.add(id);
+    if (known) {
+      this.app.store.update((s) => {
+        if (!s.settings.known.includes(id)) s.settings.known.push(id);
+      });
+    }
+    stopSpeaking();
+    const box = this.el.querySelector('.learn');
+    if (box) box.remove();
+    this.learnFig = null;
+    this.learning = null;
+    this.go(index, true);
+    if (this.sound && this.chimes) chime('next', this.app.store.state.settings.volume);
+    if (this.paused) this.toggle();
+  }
+
   voiceOpts() {
     const s = this.app.store.state.settings;
     return { voiceURI: s.voices[lang()] || '', rate: s.rate, lang: lang() };
@@ -229,7 +295,7 @@ class Player {
       if (st.type === 'pose') this.exSec[st.ex.id] = (this.exSec[st.ex.id] || 0) + use;
       if (!quiet) this.timedCues(st);
       if (this.elapsed >= st.sec - 1e-6) this.go(this.i + 1, quiet && dt > 0);
-      if (this.phase !== 'run') return;
+      if (this.phase !== 'run' || this.learning !== null) return;
     }
   }
 
@@ -377,11 +443,16 @@ class Player {
     if (e.key === 'Escape') {
       if (confirmOpen) {
         confirmOpen.remove();
-        this.toggle();
+        if (this.learning === null) this.toggle();
       } else this.confirmEnd();
       e.preventDefault();
     } else if (confirmOpen) {
       return;
+    } else if (this.learning !== null) {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target === document.body) {
+        this.endDemo();
+        e.preventDefault();
+      }
     } else if (e.key === ' ' && e.target === document.body) {
       this.toggle();
       e.preventDefault();
@@ -428,8 +499,9 @@ class Player {
     else if (act === 'close') this.confirmEnd();
     else if (act === 'resume') {
       this.el.querySelector('.confirm').remove();
-      this.toggle();
-    } else if (act === 'finish') this.finish();
+      if (this.learning === null) this.toggle();
+    } else if (act === 'learn-go') this.endDemo();
+    else if (act === 'learn-known') this.endDemo(true); else if (act === 'finish') this.finish();
     else if (act === 'quit') this.close();
     else if (act === 'sound') {
       this.muted = !this.muted;
