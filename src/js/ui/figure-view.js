@@ -74,7 +74,8 @@ function draw(v, t) {
 /**
  * @param {HTMLElement} host
  * @param {object} spec  figure spec from poses.js
- * @param {object} opts  mode: 'preview' | 'enter' | 'hold' | 'still'; mirror; glow; label
+ * @param {object} opts  mode: 'preview' | 'enter' | 'hold' | 'still'; mirror; glow; label;
+ *                      align: 'bottom' (default, feet on the floor line) | 'middle'
  */
 export function mountFigure(host, spec, opts = {}) {
   const svg = document.createElementNS(NS, 'svg');
@@ -104,6 +105,7 @@ export function mountFigure(host, spec, opts = {}) {
     playing: opts.mode !== 'still' && !reducedMotion(),
   };
   v.crop = opts.crop !== false;
+  v.align = opts.align === 'middle' ? 'xMidYMid' : 'xMidYMax';
   host.__fig = v;
   setBox(v);
   setMirror(v, !!opts.mirror);
@@ -124,6 +126,11 @@ export function mountFigure(host, spec, opts = {}) {
     },
     setMirror(on) {
       setMirror(v, on);
+    },
+    /** 'bottom' keeps the floor line at the bottom of the box; 'middle' centres the figure. */
+    setAlign(align) {
+      v.align = align === 'middle' ? 'xMidYMid' : 'xMidYMax';
+      setBox(v);
     },
     setSpec(next, { mode, mirror, enterSec } = {}) {
       v.spec = next;
@@ -167,7 +174,7 @@ export function mountFigure(host, spec, opts = {}) {
 function setBox(v) {
   if (v.crop) {
     v.svg.setAttribute('viewBox', cropBox(v.fig));
-    v.svg.setAttribute('preserveAspectRatio', 'xMidYMax meet');
+    v.svg.setAttribute('preserveAspectRatio', v.align + ' meet');
   } else {
     v.svg.setAttribute('viewBox', `0 0 ${VIEW_W} ${VIEW_H}`);
     v.svg.removeAttribute('preserveAspectRatio');
