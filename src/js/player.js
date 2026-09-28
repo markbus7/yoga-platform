@@ -5,7 +5,9 @@ import { buildTimeline, timelineSeconds, needsDemo } from './lib/session.js';
 import { mountFigure } from './ui/figure-view.js';
 import { icon } from './ui/icons.js';
 import { esc } from './ui/dom.js';
-import { chime, speak, stopSpeaking, unlockAudio, keepAwake } from './lib/audio.js';
+import { chime, speak, stopSpeaking, unlockAudio, keepAwake, speechAvailable } from './lib/audio.js';
+import { startAmbient, pauseAmbient, resumeAmbient, stopAmbient } from './lib/ambient.js';
+import { viewPick, viewOf } from './ui/viewpick.js';
 import { fmtClock, dayKey } from './lib/dates.js';
 import { AREAS } from './data/areas.js';
 import { figureFor } from './data/exercises.js';
@@ -102,6 +104,8 @@ class Player {
     this.phase = 'run';
     this.renderRun();
     this.paused = false;
+    const s = this.app.store.state.settings;
+    if (s.ambient !== 'off') startAmbient(s.ambient, s.ambientVol);
     this.last = performance.now();
     this.go(0);
     this.raf = requestAnimationFrame(this.loop);
@@ -116,12 +120,15 @@ class Player {
       <div class="player-top">
         <button class="icon-btn" data-p="close" aria-label="${esc(t('player.end'))}">${icon('close')}</button>
         <div class="grow"><span data-r="count"></span> · <span data-r="left"></span></div>
+        <button class="icon-btn" data-p="howto" aria-label="${esc(t('player.howTo'))}" title="${esc(t('player.howTo'))}">${icon('info')}</button>
+        ${speechAvailable() ? `<button class="icon-btn" data-p="replay" aria-label="${esc(t('player.replay'))}" title="${esc(t('player.replay'))}">${icon('replay')}</button>` : ''}
         <button class="icon-btn" data-p="sound" aria-label="${esc(t('player.sound'))}" aria-pressed="true">${icon('volume')}</button>
       </div>
       <div class="segs" aria-hidden="true">${segs}</div>
       <div class="player-main">
         <div class="player-stage">
           <div class="player-fig" data-r="fig"></div>
+          <div class="stage-views" data-r="views"></div>
           <div class="orb-wrap" data-r="orbwrap" hidden><div class="orb" data-r="orb"><span data-r="orbtext"></span></div></div>
         </div>
         <div class="player-info">
@@ -179,7 +186,12 @@ class Player {
     const mirror = (st.type === 'pose' && st.side === 1) || st.type === 'switch';
     const mode = st.type === 'pose' ? 'hold' : 'enter';
     const enterSec = Math.max(2, Math.min(st.sec - 1.5, 4));
-    const spec = figureFor(ex, this.spreaders);
+    const spec = figureFor(ex, this.spreaders, viewOf(this.app, ex));
+    const pickKey = isBreath && st.type === 'pose' ? '' : `${ex.id}:${viewOf(this.app, ex)}`;
+    if (this.pickKey !== pickKey) {
+      this.pickKey = pickKey;
+      this.r.views.innerHTML = pickKey ? viewPick(ex, viewOf(this.app, ex), 'data-p') : '';
+    }
     if (!this.figure) this.figure = mountFigure(this.r.fig, spec, { mode, mirror, enterSec, label: ex.name });
     else if (this.figSpec !== spec) this.figure.setSpec(spec, { mode, mirror, enterSec });
     else {
@@ -213,12 +225,22 @@ class Player {
 
   // ---------- how-to, before the clock starts ----------
 
-  showDemo(index) {
+  /**
+   * Show how to do the exercise at step `index`: a looping demo, the steps and
+   * tips, read aloud. The clock waits. With `resume` it was opened from the
+   * running session and "Continue" picks up where you were.
+   */
+  showDemo(index, { resume = false } = {}) {
+    if (this.learning !== null || !this.steps[index]) return;
     const st = this.steps[index];
     const ex = st.ex;
     this.learning = index;
-    this.i = index;
-    this.elapsed = 0;
+    this.learnResume = resume;
+    this.wasPlaying = !this.paused;
+    if (!resume) {
+      this.i = index;
+      this.elapsed = 0;
+    }
     if (!this.paused) this.toggle();
     const exNum = this.steps.slice(0, index + 1).filter((x) => x.type === 'move').length;
     const tip = (label, text) => (text ? `<div class="learn-tip"><b>${esc(label)}</b> ${esc(text)}</div>` : '');
@@ -234,21 +256,24 @@ class Player {
       </div>
       <div class="learn-body">
         <div class="learn-fig" data-learn-fig></div>
+        ${viewPick(ex, viewOf(this.app, ex), 'data-p')}
         <span class="kicker">${esc(t('learn.title'))}</span>
         <h2 tabindex="-1">${esc(ex.name)}</h2>
+        ${speechAvailable() ? `<button class="btn btn-ghost btn-small learn-replay" data-p="replay">${icon('replay')} ${esc(t('learn.replay'))}</button>` : ''}
         <ol class="learn-steps">${ex.setup.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
         ${ex.sides ? `<p class="learn-note">${esc(t('learn.sides', { a: ex.sideLabels[0], b: ex.sideLabels[1] }))}</p>` : ''}
         ${tip(t('ex.feelIt') + ':', ex.feel)}
         ${tip(t('ex.easier') + ':', ex.easier)}
       </div>
       <div class="learn-actions">
-        <button class="btn btn-lg btn-wide" data-p="learn-go">${icon('play')} ${esc(t('learn.go'))}</button>
-        <button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>
+        <button class="btn btn-lg btn-wide" data-p="learn-go">${icon('play')} ${esc(t(resume ? 'learn.resume' : 'learn.go'))}</button>
+        ${resume ? '' : `<button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>`}
       </div>`;
     this.el.appendChild(box);
-    this.learnFig = mountFigure(box.querySelector('[data-learn-fig]'), figureFor(ex, this.spreaders), { mode: 'preview', label: ex.name });
+    this.learnFig = mountFigure(box.querySelector('[data-learn-fig]'), figureFor(ex, this.spreaders, viewOf(this.app, ex)), { mode: 'preview', label: ex.name });
     box.querySelector('h2').focus({ preventScroll: true });
-    if (this.sound && this.voice) speak([ex.name + '.', ...ex.setup].join(' '), this.voiceOpts());
+    this.syncAmbient();
+    if (this.sound && this.voice) this.sayHowTo(ex);
   }
 
   endDemo(known = false) {
@@ -266,9 +291,56 @@ class Player {
     if (box) box.remove();
     this.learnFig = null;
     this.learning = null;
+    if (this.learnResume) {
+      // back to where you were; play on if the session was running
+      if (this.wasPlaying && this.paused) this.toggle();
+      this.syncAmbient();
+      return;
+    }
     this.go(index, true);
     if (this.sound && this.chimes) chime('next', this.app.store.state.settings.volume);
     if (this.paused) this.toggle();
+  }
+
+  sayHowTo(ex) {
+    speak([ex.name + '.', ...ex.setup].join(' '), this.voiceOpts());
+  }
+
+  /** Say the current instruction again (it plays even when the voice is off: you asked). */
+  replay() {
+    if (this.learning !== null) return this.sayHowTo(this.steps[this.learning].ex);
+    const st = this.steps[this.i];
+    if (!st) return;
+    const ex = st.ex;
+    if (st.type === 'switch') return speak(t('say.switch', { side: ex.sideLabels[1] }), this.voiceOpts());
+    const cue = st.type === 'pose' && this.r.cue ? this.r.cue.textContent : '';
+    speak([ex.say, cue].filter(Boolean).join(' '), this.voiceOpts());
+  }
+
+  /** Switch the camera angle for the exercise on screen (remembered for this visit). */
+  setView(v) {
+    const index = this.learning ?? this.i;
+    const st = this.steps[index];
+    if (!st) return;
+    const ex = st.ex;
+    this.app.ui.views[ex.id] = v;
+    this.el.querySelectorAll('[data-p="view"]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.v === v)));
+    const spec = figureFor(ex, this.spreaders, v);
+    if (this.learnFig) this.learnFig.setSpec(spec, { mode: 'preview' });
+    const cur = this.steps[this.i];
+    if (this.figure && cur && cur.ex === ex && this.figSpec !== spec) {
+      const mirror = (cur.type === 'pose' && cur.side === 1) || cur.type === 'switch';
+      this.figure.setSpec(spec, { mode: cur.type === 'pose' ? 'hold' : 'enter', mirror, enterSec: Math.max(2, Math.min(cur.sec - 1.5, 4)) });
+      this.figSpec = spec;
+      if (this.paused) this.figure.pause();
+    }
+  }
+
+  /** Background sound plays while the session runs (and while you read a how-to), unless muted. */
+  syncAmbient() {
+    if (this.phase !== 'run') return;
+    if (!this.muted && (!this.paused || this.learning !== null)) resumeAmbient();
+    else pauseAmbient();
   }
 
   voiceOpts() {
@@ -404,6 +476,7 @@ class Player {
       stopSpeaking();
       if (this.figure) this.figure.pause();
     } else if (this.figure) this.figure.play();
+    this.syncAmbient();
   }
 
   skip() {
@@ -501,11 +574,16 @@ class Player {
       this.el.querySelector('.confirm').remove();
       if (this.learning === null) this.toggle();
     } else if (act === 'learn-go') this.endDemo();
-    else if (act === 'learn-known') this.endDemo(true); else if (act === 'finish') this.finish();
+    else if (act === 'learn-known') this.endDemo(true);
+    else if (act === 'howto') this.showDemo(this.i, { resume: true });
+    else if (act === 'replay') this.replay();
+    else if (act === 'view') this.setView(+el.dataset.v);
+    else if (act === 'finish') this.finish();
     else if (act === 'quit') this.close();
     else if (act === 'sound') {
       this.muted = !this.muted;
       if (this.muted) stopSpeaking();
+      this.syncAmbient();
       el.innerHTML = icon(this.muted ? 'mute' : 'volume');
       el.setAttribute('aria-pressed', String(!this.muted));
       el.setAttribute('aria-label', t(this.muted ? 'player.soundOff' : 'player.soundOn'));
@@ -523,6 +601,7 @@ class Player {
     keepAwake(false);
     const completed = this.i >= this.steps.length;
     this.completed = completed;
+    stopAmbient(4);
     if (this.sound) {
       if (this.chimes) chime('done', this.app.store.state.settings.volume);
       if (this.voice && completed) speak(t('say.done'), this.voiceOpts());
@@ -597,6 +676,7 @@ class Player {
 
   close() {
     this.phase = 'closed';
+    stopAmbient(0.6);
     cancelAnimationFrame(this.raf);
     clearInterval(this.backup);
     clearTimeout(this.cueTimer);

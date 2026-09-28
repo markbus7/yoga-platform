@@ -35,7 +35,8 @@ function loop(now) {
       if (io) io.unobserve(v.host);
       continue;
     }
-    if (v.visible && v.playing) draw(v, (now - v.t0) / 1000);
+    // A frame's timestamp can be a little older than a figure started during it.
+    if (v.visible && v.playing) draw(v, Math.max(0, (now - v.t0) / 1000));
   }
   if (live.size) raf = requestAnimationFrame(loop);
 }
@@ -137,6 +138,11 @@ export function mountFigure(host, spec, opts = {}) {
       if (enterSec) v.enterSec = enterSec;
       v.t0 = performance.now();
       v.playing = v.mode !== 'still' && !reducedMotion();
+      // stay paused if it was (and restart the pause clock with the new animation)
+      if (v.pausedAt) {
+        v.playing = false;
+        v.pausedAt = v.t0;
+      }
       setMirror(v, !!mirror);
       draw(v, 0);
       kick();

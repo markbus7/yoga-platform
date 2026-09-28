@@ -216,6 +216,14 @@ export function solvePose(input) {
       { n: 'shoulderL', p: shoulderL, r: 6 },
     );
   }
+  // Single bones can be tucked under the body (drawn low and paler, like a
+  // leg folded underneath) or brought in front of it.
+  for (const s of out.segs) {
+    if (behind.has(s.key)) {
+      s.z = 4;
+      s.far = true;
+    } else if (front.has(s.key)) s.z = 36;
+  }
   return out;
 }
 
@@ -476,7 +484,7 @@ export function poseAt(fig, t, mode = 'preview', enterSec = 3) {
   if (mode === 'hold') return breathe(last);
   const n = frames.length - 1;
   if (mode === 'enter') {
-    const u = Math.min(1, t / enterSec) * n;
+    const u = Math.min(1, Math.max(0, t / enterSec)) * n;
     const i = Math.min(n - 1, Math.floor(u));
     return lerpPose(frames[i], frames[i + 1], ease(u - i));
   }
@@ -563,7 +571,7 @@ export function shapesFor(fig, pose, glowKeys = []) {
   const far = sol.view === 'side' ? (k) => /F$/.test(k) : () => false;
   for (const s of sol.segs) {
     const d = capsulePath(T(s.a), T(s.b), s.r0 * S, s.r1 * S);
-    shapes.push({ key: s.key, z: s.z, tag: 'path', cls: far(s.key) ? 'fg-far' : 'fg-body', attrs: { d } });
+    shapes.push({ key: s.key, z: s.z, tag: 'path', cls: far(s.key) || s.far ? 'fg-far' : 'fg-body', attrs: { d } });
   }
   // Toe spreaders: a band around the front of each foot.
   fig.props.forEach((pr, i) => {
@@ -574,7 +582,7 @@ export function shapesFor(fig, pose, glowKeys = []) {
       const a = [s.a[0] + (s.b[0] - s.a[0]) * u, s.a[1] + (s.b[1] - s.a[1]) * u];
       const r0 = s.r0 + (s.r1 - s.r0) * u + 1.2;
       const d = capsulePath(T(a), T(s.b), r0 * S, (s.r1 + 1.2) * S);
-      shapes.push({ key: `prop${i}-${s.key}`, z: s.z + 0.5, tag: 'path', cls: far(s.key) ? 'fg-spreader far' : 'fg-spreader', attrs: { d } });
+      shapes.push({ key: `prop${i}-${s.key}`, z: s.z + 0.5, tag: 'path', cls: far(s.key) || s.far ? 'fg-spreader far' : 'fg-spreader', attrs: { d } });
     }
   });
   if (sol.torso) {
@@ -599,6 +607,7 @@ export function shapesFor(fig, pose, glowKeys = []) {
     const seg = sol.segs.find((s) => s.key === k);
     if (seg) d = capsulePath(T(seg.a), T(seg.b), (seg.r0 + 1.6) * S, (seg.r1 + 1.6) * S);
     else if (k === 'hip') d = circlePath(T(sol.pts.hip), 13 * S);
+    else if (k === 'back') d = capsulePath(T(sol.pts.hip), T(sol.pts.neckBase), 11 * S, 11 * S);
     else if (k.startsWith('trap')) {
       const sh = sol.pts['shoulder' + k.slice(4)];
       if (sh) d = capsulePath(T(sol.pts.neckBase), T(sh), 6.5 * S, 6.5 * S);

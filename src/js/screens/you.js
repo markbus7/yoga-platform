@@ -7,7 +7,8 @@ import { GUIDE } from '../data/guide.js';
 import { VIDEOS, LEARN_LINKS } from '../data/videos.js';
 import { HOLD_LENGTHS } from '../lib/session.js';
 import { voicesFor, speechAvailable, speak, unlockAudio, chime } from '../lib/audio.js';
-import { defaultState, DEMO_MODES } from '../lib/store.js';
+import { defaultState, DEMO_MODES, AMBIENTS } from '../lib/store.js';
+import { previewAmbient, setAmbientVolume, ambientPlaying } from '../lib/ambient.js';
 import { EXERCISE } from '../data/exercises.js';
 import { t, lang, list, LANGS } from '../i18n.js';
 import { partOfDay, nowParts, deviceZone, validDayParts, DEFAULT_DAY_PARTS } from '../lib/dates.js';
@@ -163,6 +164,7 @@ export function render(app) {
         <div class="switch-row"><div><div class="t">${t('you.voice')}</div><div class="d">${speechAvailable() ? t('you.voiceOn') : t('you.voiceNone')}</div></div>${sw('voice', settings.voice, t('you.voice'))}</div>
         ${voiceBlock(settings)}
         <div class="switch-row"><div><div class="t">${t('you.chimes')}</div><div class="d">${t('you.chimesText')}</div></div>${sw('chime', settings.chime, t('you.chimes'))}</div>
+        <div class="switch-row" style="display:block"><div class="t">${t('you.ambient')}</div><div class="d" style="margin-bottom:8px">${t('you.ambientText')}</div><div class="seg" role="group" aria-label="${t('you.ambient')}">${AMBIENTS.map((v) => html`<button data-act="ambient" data-v="${v}" aria-pressed="${settings.ambient === v}">${t('you.ambient.' + v)}</button>`)}</div>${settings.ambient !== 'off' ? html`<div class="field range-field"><label for="f-ambvol" class="small">${t('you.ambientVol')}</label><input id="f-ambvol" type="range" min="0.1" max="1" step="0.05" value="${settings.ambientVol}" data-field="ambientVol"></div>` : ''}</div>
         <div class="switch-row"><div><div class="t">${t('you.checkins')}</div><div class="d">${t('you.checkinsText')}</div></div>${sw('checkins', settings.checkins, t('you.checkins'))}</div>
         <div class="switch-row" style="display:block"><div class="t">${t('you.demo')}</div><div class="d" style="margin-bottom:8px">${t('you.demoText')}</div><div class="seg" role="group" aria-label="${t('you.demo')}">${DEMO_MODES.map((v) => html`<button data-act="demo" data-v="${v}" aria-pressed="${settings.demo === v}">${t('you.demo.' + v)}</button>`)}</div>${settings.known.length && settings.demo === 'new' ? html`<p class="small muted" style="margin-top:8px">${t('you.known', { n: settings.known.length })} <button class="link-btn" data-act="known-reset">${t('you.knownReset')}</button></p>` : ''}</div>
         <div class="switch-row" style="display:block"><div class="t" style="margin-bottom:8px">${t('you.transition')}</div><div class="seg" role="group" aria-label="${t('you.transition')}">${TRANSITIONS.map(([v, k]) => html`<button data-act="transition" data-v="${v}" aria-pressed="${settings.transition === v}">${t(k)} · ${v}s</button>`)}</div></div>
@@ -223,6 +225,14 @@ export const actions = {
     set(app, (s) => {
       s.settings.voice = !s.settings.voice;
     });
+  },
+  ambient(app, el) {
+    const kind = el.dataset.v;
+    unlockAudio();
+    set(app, (s) => {
+      s.settings.ambient = kind;
+    });
+    previewAmbient(kind, app.store.state.settings.ambientVol);
   },
   chime(app) {
     set(app, (s) => {
@@ -378,6 +388,15 @@ export const fields = {
     app.store.update((s) => {
       s.profile.name = value.slice(0, 40);
     });
+  },
+  ambientVol(app, value) {
+    const v = Math.min(1, Math.max(0, +value || 0));
+    app.store.update((s) => {
+      s.settings.ambientVol = v;
+    });
+    unlockAudio();
+    if (ambientPlaying()) setAmbientVolume(v);
+    else previewAmbient(app.store.state.settings.ambient, v, 4);
   },
   voice(app, value) {
     const l = lang();

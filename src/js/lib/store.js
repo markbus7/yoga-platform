@@ -11,12 +11,14 @@ const LOCAL_KEY = 'unstuck.v1';
 
 /** When the player shows how to do an exercise first: always, until you know it, or never. */
 export const DEMO_MODES = ['always', 'new', 'off'];
+/** Background sound during a session (see lib/ambient.js). */
+export const AMBIENTS = ['off', 'waves', 'rain', 'hum'];
 
 export function defaultState() {
   return {
     v: 1,
     profile: { name: '', goal: 15, when: 'evening', care: [], blocks: 4, strap: false, wall: true, chair: true, spreaders: true, shakti: true },
-    settings: { lang: '', hold: 1, voice: true, voices: { en: '', nl: '' }, rate: 1, chime: true, volume: 0.7, transition: 8, checkins: true, demo: 'new', known: [], timeZone: '', dayParts: { morning: 5, afternoon: 12, evening: 17, night: 22 } },
+    settings: { lang: '', hold: 1, voice: true, voices: { en: '', nl: '' }, rate: 1, chime: true, volume: 0.7, transition: 8, checkins: true, demo: 'new', known: [], ambient: 'waves', ambientVol: 0.5, timeZone: '', dayParts: { morning: 5, afternoon: 12, evening: 17, night: 22 } },
     program: { startedAt: null, done: {} },
     sessions: [],
     tests: [],
@@ -36,6 +38,8 @@ export function normalize(input) {
   settings.dayParts = { ...d.settings.dayParts, ...(settings.dayParts || {}) };
   settings.known = arr(settings.known).filter((id) => typeof id === 'string');
   if (!DEMO_MODES.includes(settings.demo)) settings.demo = d.settings.demo;
+  if (!AMBIENTS.includes(settings.ambient)) settings.ambient = d.settings.ambient;
+  settings.ambientVol = Number.isFinite(+settings.ambientVol) ? Math.min(1, Math.max(0, +settings.ambientVol)) : d.settings.ambientVol;
   if (settings.voiceURI && !settings.voices.en) settings.voices.en = settings.voiceURI;
   delete settings.voiceURI;
   return {

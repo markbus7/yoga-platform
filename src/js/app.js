@@ -48,6 +48,7 @@ export function createApp(root, store) {
       build: { minutes: 10, style: 'mix', place: 'mat', seed: 1 },
       check: null,
       historyAll: false,
+      views: {},
     },
     exercise: (id) => EXERCISE[id],
   };
