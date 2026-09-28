@@ -704,3 +704,16 @@ export const ALT_VIEWS = {
     glow: ['hip', 'thighN'],
   }],
 };
+
+// ---------- resting between exercises ----------
+// Where you rest depends on where the last exercise left you.
+const KNEEL_REST = { anchor: 'kneeN', frames: [POSES.child.frames[1]], glow: [] };
+export const REST_POSES = {
+  back: POSES.constructive,
+  belly: { anchor: 'hip', frames: [POSES.sphinx.frames[0]], glow: [] },
+  kneeling: KNEEL_REST,
+  allfours: KNEEL_REST,
+  seated: POSES.easyseat,
+  standing: { groundOn: FEET, frames: [{}], glow: [] },
+  chair: { groundOn: FEET, frames: [{ ...CHAIR_SIDE }], props: [{ t: 'chair' }], glow: [] },
+};

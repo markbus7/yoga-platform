@@ -13,7 +13,10 @@ import { AREAS } from './data/areas.js';
 import { figureFor } from './data/exercises.js';
 import { streak } from './lib/stats.js';
 import { newId } from './lib/store.js';
-import { t, lang } from './i18n.js';
+import { t, lang, setLang } from './i18n.js';
+import { ROUTINE } from './data/routines.js';
+import { EXERCISE } from './data/exercises.js';
+import { REST_POSES } from './figure/poses.js';
 
 // Saved as ids, shown in the current language.
 const FEELINGS = ['calmer', 'looser', 'lighter', 'sleepy', 'energised', 'same', 'sore'];
@@ -32,13 +35,13 @@ class Player {
     this.voice = s.voice;
     this.chimes = s.chime;
     this.muted = false;
-    this.steps = buildTimeline(opts.items, { scale: opts.scale ?? s.hold, transition: s.transition });
+    // Toe spreaders: the timeline says when to put them in and take them out.
+    this.spreaders = !!app.store.state.profile.spreaders;
+    this.steps = buildTimeline(opts.items, { scale: opts.scale ?? s.hold, transition: s.transition, spreaders: this.spreaders });
     this.planned = timelineSeconds(this.steps);
     this.poseSteps = this.steps.map((st, i) => (st.type === 'pose' ? i : -1)).filter((i) => i >= 0);
     this.exCount = this.steps.filter((st) => st.type === 'move').length;
-    // Toe spreaders: remind once, as you set up the first hold where your feet are free.
-    this.spreaders = !!app.store.state.profile.spreaders;
-    this.spreaderStep = this.spreaders ? this.steps.findIndex((st) => st.type === 'move' && st.ex.spreaders) : -1;
+    this.hasSpreaders = this.steps.some((st) => st.gear === 'on');
     // Exercises to show step by step before the clock starts (see Settings).
     const { sessions } = app.store.state;
     this.demoFor = new Set(this.steps.filter((st) => st.type === 'move' && needsDemo(st.ex.id, s, sessions)).map((st) => st.ex.id));
@@ -88,7 +91,7 @@ class Player {
     this.phase = 'checkin';
     const areas = AREAS.map((a) => `<button type="button" class="chip" data-stuck="${a.id}" aria-pressed="${this.stuck.has(a.id)}">${esc(a.name)}</button>`).join('');
     this.el.innerHTML = `
-      <div class="player-top"><button class="icon-btn" data-p="quit" aria-label="${esc(t('player.close'))}">${icon('close')}</button><div class="grow">${esc(this.opts.title)}</div><span style="width:44px"></span></div>
+      <div class="player-top"><button class="icon-btn" data-p="quit" aria-label="${esc(t('player.close'))}">${icon('close')}</button><div class="grow">${esc(this.titleNow())}</div>${this.langBtn()}</div>
       <div class="player-done">
         <span class="kicker">${esc(t('player.before'))}</span>
         <h2>${esc(t('player.howTense'))}</h2>
@@ -96,7 +99,7 @@ class Player {
           <div class="scale" role="group" aria-label="${esc(t('player.tensionAria'))}">${scaleButtons(this.before, 'before')}</div>
           <div class="scale-ends"><span>${esc(t('player.loose'))}</span><span>${esc(t('player.locked'))}</span></div>
         </div>
-        ${this.spreaderStep >= 0 ? `<p class="gear-note">${icon('foot')}<span>${esc(t('player.spreadersTip'))}</span></p>` : ''}
+        ${this.hasSpreaders ? `<p class="gear-note">${icon('foot')}<span>${esc(t('player.spreadersTip'))}</span></p>` : ''}
         <p class="small" style="opacity:.85">${esc(t('player.whereStuck'))} <span style="opacity:.75">${esc(t('player.optional'))}</span></p>
         <div class="chips" style="justify-content:center">${areas}</div>
         <button class="btn btn-lg btn-wide" data-p="begin">${icon('play')} ${esc(t('player.start'))}</button>
@@ -126,9 +129,10 @@ class Player {
       <div class="player-top">
         <button class="icon-btn" data-p="close" aria-label="${esc(t('player.end'))}">${icon('close')}</button>
         <div class="grow"><span data-r="count"></span> · <span data-r="left"></span></div>
+        ${this.langBtn()}
         <button class="icon-btn" data-p="howto" aria-label="${esc(t('player.howTo'))}" title="${esc(t('player.howTo'))}">${icon('info')}</button>
         ${speechAvailable() ? `<button class="icon-btn" data-p="replay" aria-label="${esc(t('player.replay'))}" title="${esc(t('player.replay'))}">${icon('replay')}</button>` : ''}
-        <button class="icon-btn" data-p="sound" aria-label="${esc(t('player.sound'))}" aria-pressed="true">${icon('volume')}</button>
+        <button class="icon-btn" data-p="sound" aria-label="${esc(t(this.muted ? 'player.soundOff' : 'player.sound'))}" aria-pressed="${!this.muted}">${icon(this.muted ? 'mute' : 'volume')}</button>
       </div>
       <div class="segs" aria-hidden="true">${segs}</div>
       <div class="player-main">
@@ -140,7 +144,7 @@ class Player {
         <div class="player-info">
           <span class="kicker" data-r="kicker"></span>
           <span class="side" data-r="side" hidden></span>
-          <span class="gear" data-r="gear" hidden>${icon('foot')}<span>${esc(t('player.spreaders'))}</span></span>
+          <span class="gear" data-r="gear" hidden>${icon('foot')}<span data-r="geartext"></span></span>
           <h2 data-r="name" aria-live="polite"></h2>
           <div class="clock" data-r="clock" aria-hidden="true"></div>
           <p class="cue" data-r="cue"></p>
@@ -169,43 +173,56 @@ class Player {
     this.cueIdx = -1;
     if (index >= this.steps.length) return this.finish();
     const st = this.steps[index];
+    if (st.type === 'move' && this.demoFor.has(st.ex.id) && !this.demoShown.has(st.ex.id)) return this.showDemo(index);
+    this.showStep(quiet);
+  }
+
+  /** Put the current step on screen, and (unless `quiet`) announce it. */
+  showStep(quiet = false) {
+    const index = this.i;
+    const st = this.steps[index];
     const ex = st.ex;
-    if (st.type === 'move' && this.demoFor.has(ex.id) && !this.demoShown.has(ex.id)) return this.showDemo(index);
+    const rest = st.type === 'rest';
     const isBreath = ex.kind === 'breath';
-    const nextPose = this.steps.slice(index + 1).find((x) => x.type === 'move');
+    const nextMove = this.steps.slice(index + 1).find((x) => x.type === 'move');
 
     // text
     const exNum = this.steps.slice(0, index + 1).filter((x) => x.type === 'move').length;
     this.set('count', t('player.count', { n: exNum, total: this.exCount }));
-    this.set('name', ex.name);
-    this.r.kicker.textContent = t(st.type === 'move' ? (st.first ? 'player.firstUp' : 'player.nextUp') : st.type === 'switch' ? 'player.switch' : isBreath ? 'player.breathe' : ex.kind === 'flow' ? 'player.moveSlowly' : 'player.hold');
-    const side = st.type === 'pose' && ex.sides ? ex.sideLabels[st.side] : st.type === 'switch' ? ex.sideLabels[1] : st.type === 'move' && ex.sides ? ex.sideLabels[0] : '';
+    this.set('name', rest ? t('player.restTitle') : ex.name);
+    this.r.kicker.textContent = t(rest ? 'player.rest' : st.type === 'move' ? (st.first ? 'player.firstUp' : 'player.nextUp') : st.type === 'switch' ? 'player.switch' : isBreath ? 'player.breathe' : ex.kind === 'flow' ? 'player.moveSlowly' : 'player.hold');
+    const side = rest ? '' : st.type === 'pose' && ex.sides ? ex.sideLabels[st.side] : st.type === 'switch' ? ex.sideLabels[1] : st.type === 'move' && ex.sides ? ex.sideLabels[0] : '';
     this.r.side.hidden = !side;
     this.r.side.textContent = side;
-    this.r.nextup.textContent = st.type === 'pose' && nextPose ? t('player.next', { name: nextPose.ex.name }) : st.type === 'pose' && ex.sides && st.side === 0 ? t('player.otherSide') : '';
-    if (st.type === 'pose' && !nextPose && !(ex.sides && st.side === 0)) this.r.nextup.textContent = t('player.lastOne');
-    this.showCue(st.type === 'move' ? ex.setup.join(' ') : st.type === 'switch' ? t('player.switchCue') : ex.cues[0]);
+    let nextUp = '';
+    if (rest) nextUp = t('player.next', { name: st.next.name });
+    else if (st.type === 'pose' && ex.sides && st.side === 0) nextUp = t('player.otherSide');
+    else if (st.type === 'pose') nextUp = nextMove ? t('player.next', { name: nextMove.ex.name }) : t('player.lastOne');
+    this.r.nextup.textContent = nextUp;
+    this.showCue(rest ? this.restCue(st) : st.type === 'move' ? ex.setup.join(' ') : st.type === 'switch' ? t('player.switchCue') : ex.cues[0]);
+    const gear = st.gear === 'on' ? 'player.gearOn' : st.gear === 'off' ? 'player.gearOff' : st.type === 'move' && st.spreadersIn ? 'player.spreaders' : '';
+    this.r.gear.hidden = !gear;
+    if (gear) this.r.geartext.textContent = t(gear);
 
-    // figure or breathing orb
+    // figure (a resting figure between exercises) or breathing orb
     this.r.orbwrap.hidden = !(isBreath && st.type === 'pose');
     this.r.fig.style.visibility = isBreath && st.type === 'pose' ? 'hidden' : 'visible';
-    const mirror = (st.type === 'pose' && st.side === 1) || st.type === 'switch';
-    const mode = st.type === 'pose' ? 'hold' : 'enter';
+    const mirror = !rest && ((st.type === 'pose' && st.side === 1) || st.type === 'switch');
+    const mode = st.type === 'pose' || rest ? 'hold' : 'enter';
     const enterSec = Math.max(2, Math.min(st.sec - 1.5, 4));
-    const spec = figureFor(ex, this.spreaders, viewOf(this.app, ex));
-    const pickKey = isBreath && st.type === 'pose' ? '' : `${ex.id}:${viewOf(this.app, ex)}`;
+    const spec = rest ? REST_POSES[ex.position] || REST_POSES.back : figureFor(ex, this.spreaders, viewOf(this.app, ex));
+    const pickKey = rest || (isBreath && st.type === 'pose') ? '' : `${ex.id}:${viewOf(this.app, ex)}`;
     if (this.pickKey !== pickKey) {
       this.pickKey = pickKey;
       this.r.views.innerHTML = pickKey ? viewPick(ex, viewOf(this.app, ex), 'data-p') : '';
     }
-    if (!this.figure) this.figure = mountFigure(this.r.fig, spec, { mode, mirror, enterSec, label: ex.name, align: this.figAlign() });
+    if (!this.figure) this.figure = mountFigure(this.r.fig, spec, { mode, mirror, enterSec, label: rest ? t('player.restTitle') : ex.name, align: this.figAlign() });
     else if (this.figSpec !== spec) this.figure.setSpec(spec, { mode, mirror, enterSec });
     else {
       this.figure.setMirror(mirror);
       this.figure.setMode(mode, { enterSec, restart: st.type !== 'pose' || ex.kind === 'hold' });
     }
     this.figSpec = spec;
-    this.r.gear.hidden = !(this.spreaderStep >= 0 && index === this.spreaderStep);
     if (this.paused) this.figure.pause();
 
     // segments
@@ -215,18 +232,96 @@ class Player {
       el.firstChild.style.width = done ? '100%' : '0';
     });
 
-    // sound
+    // sound: a falling tone when an exercise ends, a soft one for "next up",
+    // ticks for 3-2-1 (see timedCues) and a rising tone when the hold starts
     if (!quiet && this.sound) {
-      if (st.type === 'move') {
-        if (this.chimes) chime('next', this.app.store.state.settings.volume);
-        const gear = index === this.spreaderStep ? ' ' + t('say.spreaders') : '';
-        if (this.voice) speak(t(st.first ? 'say.first' : 'say.next', { text: ex.say }) + gear, this.voiceOpts());
+      const vol = this.app.store.state.settings.volume;
+      const gearSay = st.gear === 'on' ? t('say.gearOn') : st.gear === 'off' ? t('say.gearOff') : '';
+      if (rest) {
+        if (this.chimes) chime('end', vol);
+        if (this.voice) speak([t('say.release'), ex.exit || t('say.comeOut'), gearSay].filter(Boolean).join(' '), this.voiceOpts());
+      } else if (st.type === 'move') {
+        if (this.chimes) chime('next', vol);
+        if (this.voice) speak([t(st.first ? 'say.first' : 'say.next', { text: ex.say }), gearSay].filter(Boolean).join(' '), this.voiceOpts());
       } else if (st.type === 'switch') {
-        if (this.chimes) chime('switch', this.app.store.state.settings.volume);
+        if (this.chimes) chime('end', vol);
         if (this.voice) speak(t('say.switch', { side: ex.sideLabels[1] }), this.voiceOpts());
-      } else if (this.chimes) chime('start', this.app.store.state.settings.volume);
+      } else if (this.chimes) chime('start', vol);
     }
     this.paint(true);
+  }
+
+  /** What to do while resting: how to rest where you are, or the toe spreaders. */
+  restCue(st) {
+    if (st.gear === 'on') return t('player.gearOnCue');
+    if (st.gear === 'off') return t('player.gearOffCue');
+    return t('rest.' + st.ex.position);
+  }
+
+  titleNow() {
+    const { routineId, exId, title } = this.opts;
+    if (routineId && ROUTINE[routineId]) return ROUTINE[routineId].name;
+    if (exId && EXERCISE[exId]) return EXERCISE[exId].name;
+    return title;
+  }
+
+  langBtn() {
+    const other = lang() === 'nl' ? 'en' : 'nl';
+    return `<button class="icon-btn lang-btn" data-p="lang" lang="${other}" aria-label="${esc(t('player.langSwitch'))}" title="${esc(t('player.langSwitch'))}">${other.toUpperCase()}</button>`;
+  }
+
+  /** Switch between English and Dutch mid-session, keeping your place and the clock. */
+  switchLang() {
+    const next = lang() === 'nl' ? 'en' : 'nl';
+    setLang(next);
+    this.app.store.update((s) => {
+      s.settings.lang = next;
+    });
+    stopSpeaking();
+    this.el.setAttribute('aria-label', this.titleNow());
+    if (this.phase === 'checkin') return this.showCheckin();
+    if (this.phase === 'done') {
+      const note = (this.el.querySelector('#p-note') || {}).value || '';
+      this.renderDone();
+      const box = this.el.querySelector('#p-note');
+      if (box) box.value = note;
+      return;
+    }
+    if (this.phase !== 'run') return;
+    const { i, elapsed } = this;
+    const learning = this.learning;
+    const resume = this.learnResume;
+    const wasPlaying = this.wasPlaying;
+    const waiting = learning !== null && !resume && !this.autoTimer;
+    clearTimeout(this.autoTimer);
+    this.learning = null;
+    this.learnFig = null;
+    this.renderRun();
+    this.cache = {};
+    this.pickKey = null;
+    this.i = i;
+    this.showStep(true);
+    this.elapsed = elapsed;
+    this.paint();
+    this.syncToggle();
+    if (learning !== null) {
+      this.showDemo(learning, { resume });
+      this.wasPlaying = wasPlaying;
+      if (waiting) this.stopAuto();
+    }
+  }
+
+  /** Make the play/pause button and the figure match `this.paused`. */
+  syncToggle() {
+    const btn = this.el.querySelector('[data-p="toggle"]');
+    if (btn) {
+      btn.innerHTML = icon(this.paused ? 'play' : 'pause');
+      btn.setAttribute('aria-label', t(this.paused ? 'player.resume' : 'player.pause'));
+    }
+    if (this.figure) {
+      if (this.paused) this.figure.pause();
+      else this.figure.play();
+    }
   }
 
   // ---------- how-to, before the clock starts ----------
@@ -249,6 +344,7 @@ class Player {
     }
     if (!this.paused) this.toggle();
     const exNum = this.steps.slice(0, index + 1).filter((x) => x.type === 'move').length;
+    const gear = this.gearNote(st);
     const tip = (label, text) => (text ? `<div class="learn-tip"><b>${esc(label)}</b> ${esc(text)}</div>` : '');
     const box = document.createElement('div');
     box.className = 'learn';
@@ -258,7 +354,7 @@ class Player {
       <div class="player-top">
         <button class="icon-btn" data-p="close" aria-label="${esc(t('player.end'))}">${icon('close')}</button>
         <div class="grow">${esc(t('player.count', { n: exNum, total: this.exCount }))}</div>
-        <span style="width:44px"></span>
+        ${this.langBtn()}
       </div>
       <div class="learn-main">
         <div class="learn-visual">
@@ -267,6 +363,7 @@ class Player {
         </div>
         <div class="learn-side">
           <div class="learn-text">
+            ${gear ? `<p class="gear-note">${icon('foot')}<span>${esc(t(gear))}</span></p>` : ''}
             <span class="kicker">${esc(t('learn.title'))}</span>
             <h2 tabindex="-1">${esc(ex.name)}</h2>
             ${speechAvailable() ? `<button class="btn btn-ghost btn-small learn-replay" data-p="replay">${icon('replay')} ${esc(t('learn.replay'))}</button>` : ''}
@@ -277,6 +374,7 @@ class Player {
           </div>
           <div class="learn-actions">
             <button class="btn btn-lg btn-wide" data-p="learn-go">${icon('play')} ${esc(t(resume ? 'learn.resume' : 'learn.go'))}</button>
+            ${resume ? '' : `<div class="learn-auto" data-auto><span class="auto-bar" aria-hidden="true"><i></i></span><span class="small">${esc(t('learn.auto'))}</span><button class="link-btn" data-p="learn-wait" style="color:inherit">${esc(t('learn.wait'))}</button></div>`}
             ${resume ? '' : `<button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>`}
           </div>
         </div>
@@ -287,12 +385,48 @@ class Player {
     // Some browsers scroll to the focused title anyway; start the text at the top.
     box.querySelector('.learn-text').scrollTop = 0;
     this.syncAmbient();
-    if (this.sound && this.voice) this.sayHowTo(ex);
+    if (this.sound && this.voice) this.sayHowTo(ex, st);
+    if (!resume) this.autoContinue(box, ex);
+  }
+
+  /**
+   * Carry on without a tap: enough time to hear (or read) the steps and get
+   * into place, shown as a slowly filling bar. "Wait" stops it.
+   */
+  autoContinue(box, ex) {
+    clearTimeout(this.autoTimer);
+    const words = [ex.name, ...ex.setup].join(' ').length;
+    const ms = Math.max(14000, words * 75) + 10000;
+    const bar = box.querySelector('.auto-bar i');
+    if (bar) {
+      bar.style.transition = `width ${ms}ms linear`;
+      requestAnimationFrame(() => requestAnimationFrame(() => (bar.style.width = '100%')));
+    }
+    const index = this.learning;
+    this.autoTimer = setTimeout(() => {
+      if (this.learning === index && !this.el.querySelector('.confirm')) this.endDemo();
+    }, ms);
+  }
+
+  stopAuto() {
+    clearTimeout(this.autoTimer);
+    this.autoTimer = 0;
+    const auto = this.el.querySelector('[data-auto]');
+    if (auto) auto.innerHTML = `<span class="small">${esc(t('learn.waiting'))}</span>`;
+  }
+
+  /** The toe-spreader note for a move step: put them in now, take them out, or keep them in. */
+  gearNote(st) {
+    if (st.type !== 'move') return '';
+    if (st.gear === 'on') return 'player.gearOn';
+    if (st.gear === 'off') return 'player.gearOff';
+    return st.spreadersIn ? 'player.spreaders' : '';
   }
 
   endDemo(known = false) {
     const index = this.learning;
     if (index === null) return;
+    clearTimeout(this.autoTimer);
     const id = this.steps[index].ex.id;
     this.demoShown.add(id);
     if (known) {
@@ -313,20 +447,23 @@ class Player {
     }
     this.go(index, true);
     if (this.sound && this.chimes) chime('next', this.app.store.state.settings.volume);
+    if (this.sound && this.voice) speak(t('say.getReady'), this.voiceOpts());
     if (this.paused) this.toggle();
   }
 
-  sayHowTo(ex) {
-    speak([ex.name + '.', ...ex.setup].join(' '), this.voiceOpts());
+  sayHowTo(ex, st = null) {
+    const gear = st && st.gear === 'on' ? t('say.gearOn') : st && st.gear === 'off' ? t('say.gearOff') : '';
+    speak([ex.name + '.', gear, ...ex.setup].filter(Boolean).join(' '), this.voiceOpts());
   }
 
   /** Say the current instruction again (it plays even when the voice is off: you asked). */
   replay() {
-    if (this.learning !== null) return this.sayHowTo(this.steps[this.learning].ex);
+    if (this.learning !== null) return this.sayHowTo(this.steps[this.learning].ex, this.steps[this.learning]);
     const st = this.steps[this.i];
     if (!st) return;
     const ex = st.ex;
     if (st.type === 'switch') return speak(t('say.switch', { side: ex.sideLabels[1] }), this.voiceOpts());
+    if (st.type === 'rest') return speak([ex.exit || t('say.comeOut'), this.restCue(st)].join(' '), this.voiceOpts());
     const cue = st.type === 'pose' && this.r.cue ? this.r.cue.textContent : '';
     speak([ex.say, cue].filter(Boolean).join(' '), this.voiceOpts());
   }
@@ -391,6 +528,17 @@ class Player {
 
   timedCues(st) {
     const ex = st.ex;
+    const left = st.sec - this.elapsed;
+    const vol = this.app.store.state.settings.volume;
+    // 3, 2, 1: soft ticks just before a hold (or its other side) starts
+    if (st.type === 'move' || st.type === 'switch') {
+      const k = Math.ceil(left);
+      if (k >= 1 && k <= 3 && st.sec >= k + 2 && !this.spoken.has('t' + k)) {
+        this.spoken.add('t' + k);
+        if (this.sound && this.chimes) chime('tick', vol);
+      }
+      return;
+    }
     if (st.type !== 'pose') return;
     if (ex.kind === 'breath') {
       const b = this.breathPhase(ex);
@@ -419,10 +567,11 @@ class Player {
         if (this.sound && this.voice) speak(cue, this.voiceOpts());
       }
     });
-    if (st.sec - this.elapsed <= 3.2 && !this.spoken.has('end') && ex.exit && (!ex.sides || st.side === 1)) {
-      this.spoken.add('end');
-      this.showCue(ex.exit);
-      if (this.sound && this.voice) speak(ex.exit, this.voiceOpts());
+    // ten seconds to go, so you know the end is near without looking
+    if (st.sec >= 30 && left <= 10 && !this.spoken.has('ten')) {
+      this.spoken.add('ten');
+      if (this.sound && this.voice) speak(t('say.tenLeft'), this.voiceOpts());
+      else if (this.sound && this.chimes) chime('tick', vol);
     }
   }
 
@@ -499,7 +648,7 @@ class Player {
 
   skip() {
     let j = this.i + 1;
-    if (this.steps[j] && this.steps[j].type === 'switch') j++;
+    while (this.steps[j] && (this.steps[j].type === 'switch' || (this.steps[j].type === 'rest' && !this.steps[j].gear))) j++;
     this.go(j);
   }
 
@@ -512,6 +661,7 @@ class Player {
   }
 
   confirmEnd() {
+    if (this.learning !== null) this.stopAuto();
     if (!this.paused) this.toggle();
     const box = document.createElement('div');
     box.className = 'confirm';
@@ -593,7 +743,9 @@ class Player {
       if (this.learning === null) this.toggle();
     } else if (act === 'learn-go') this.endDemo();
     else if (act === 'learn-known') this.endDemo(true);
+    else if (act === 'learn-wait') this.stopAuto();
     else if (act === 'howto') this.showDemo(this.i, { resume: true });
+    else if (act === 'lang') this.switchLang();
     else if (act === 'replay') this.replay();
     else if (act === 'view') this.setView(+el.dataset.v);
     else if (act === 'finish') this.finish();
@@ -622,16 +774,25 @@ class Player {
     stopAmbient(4);
     if (this.sound) {
       if (this.chimes) chime('done', this.app.store.state.settings.volume);
-      if (this.voice && completed) speak(t('say.done'), this.voiceOpts());
+      // how to come out of the last pose, then well done
+      const last = this.steps[this.steps.length - 1];
+      const lastMove = [...this.steps].reverse().find((x) => x.type === 'move');
+      const gearOff = lastMove && lastMove.spreadersIn ? t('say.gearOff') : '';
+      if (this.voice && completed) speak([last && last.ex.exit, gearOff, t('say.done')].filter(Boolean).join(' '), this.voiceOpts());
     }
+    this.renderDone();
+  }
+
+  renderDone() {
+    const completed = this.completed;
     const state = this.app.store.state;
     const today = dayKey();
     const minutes = Math.max(1, Math.round(this.active / 60));
     const poses = Object.keys(this.exSec).length;
     const nextStreak = streak([...state.sessions, { day: today, sec: this.active }], today).days;
-    const feel = FEELINGS.map((f) => `<button type="button" class="chip" data-feel="${f}" aria-pressed="false">${esc(t('feel.' + f))}</button>`).join('');
+    const feel = FEELINGS.map((f) => `<button type="button" class="chip" data-feel="${f}" aria-pressed="${this.feel.has(f)}">${esc(t('feel.' + f))}</button>`).join('');
     this.el.innerHTML = `
-      <div class="player-top"><span style="width:44px"></span><div class="grow">${esc(this.opts.title)}</div><span style="width:44px"></span></div>
+      <div class="player-top"><span style="width:44px"></span><div class="grow">${esc(this.titleNow())}</div>${this.langBtn()}</div>
       <div class="player-done">
         <span class="kicker">${esc(t(completed ? 'player.complete' : 'player.endedEarly'))}</span>
         <h2>${esc(t(completed ? 'player.niceWork' : 'player.everyMinute'))}</h2>
@@ -693,6 +854,7 @@ class Player {
   }
 
   close() {
+    clearTimeout(this.autoTimer);
     this.phase = 'closed';
     stopAmbient(0.6);
     if (this.wide && this.wide.removeEventListener) this.wide.removeEventListener('change', this.onWide);

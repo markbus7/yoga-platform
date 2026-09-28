@@ -29,12 +29,6 @@ export function positionRank(p) {
   return i < 0 ? POSITION_ORDER.length : i;
 }
 
-/**
- * Build the step list.
- *   pose    an exercise (or one side of it)
- *   switch  a short pause to change sides
- *   move    time to get into the next exercise (longer when the position changes)
- */
 /** Sessions with at least this many seconds in an exercise count as having done it. */
 const DONE_SEC = 15;
 /** "Until I know it" shows the how-to for your first few times. */
@@ -51,26 +45,62 @@ export function needsDemo(id, settings, sessions) {
   return !settings.known.includes(id) && timesDone(sessions, id) < DEMO_TIMES;
 }
 
-export function buildTimeline(items, { scale = 1, transition = 8 } = {}) {
+/** Positions where your weight is on your feet or toes: no toe spreaders there. */
+const ON_FEET = new Set(['standing', 'kneeling', 'allfours']);
+
+/**
+ * Build the step list.
+ *   move    get into the next exercise (longer when the position changes)
+ *   pose    an exercise, or one side of it
+ *   switch  come out and set up the other side
+ *   rest    come out of the pose you just held and rest, before the next move
+ *
+ * With `spreaders`, the step before the first hold where your feet are free
+ * says to put toe spreaders in (with extra time), and the step before you
+ * stand or kneel again says to take them out: `gear: 'on' | 'off'`. The move
+ * steps in between carry `spreadersIn` so the screen can show it.
+ */
+export function buildTimeline(items, { scale = 1, transition = 8, spreaders = false } = {}) {
   const steps = [];
-  let prevPos = null;
-  items.forEach((it, idx) => {
+  let prev = null;
+  for (const it of items) {
     const ex = EXERCISE[it.id];
-    if (!ex) return;
+    if (!ex) continue;
     const sec = scaledSeconds(ex, it.sec, scale);
-    const changing = prevPos !== null && prevPos !== ex.position;
-    const moveSec = idx === 0 ? Math.max(6, transition - 1) : changing ? transition + 3 : transition;
-    steps.push({ type: 'move', ex, sec: moveSec, first: idx === 0 });
+    if (prev) steps.push({ type: 'rest', ex: prev, next: ex, sec: restSeconds(prev, transition) });
+    const moveSec = !prev ? Math.max(6, transition - 1) : prev.position !== ex.position ? transition + 3 : transition;
+    steps.push({ type: 'move', ex, sec: moveSec, first: !prev });
     if (ex.sides) {
       steps.push({ type: 'pose', ex, side: 0, sec });
-      steps.push({ type: 'switch', ex, sec: 5 });
+      steps.push({ type: 'switch', ex, sec: ex.kind === 'hold' ? transition + 2 : Math.max(5, transition - 2) });
       steps.push({ type: 'pose', ex, side: 1, sec });
     } else {
       steps.push({ type: 'pose', ex, side: null, sec });
     }
-    prevPos = ex.position;
-  });
+    prev = ex;
+  }
+  if (spreaders) planSpreaders(steps);
   return steps;
+}
+
+/** Holds end with a proper rest; after moving or breathing a short pause is enough. */
+function restSeconds(ex, transition) {
+  return ex.kind === 'hold' ? transition : Math.max(3, Math.round(transition / 2));
+}
+
+function planSpreaders(steps) {
+  let on = false;
+  steps.forEach((st, i) => {
+    if (st.type !== 'move') return;
+    const want = st.ex.spreaders ? true : ON_FEET.has(st.ex.position) ? false : on;
+    if (want !== on) {
+      const before = steps[i - 1] && steps[i - 1].type === 'rest' ? steps[i - 1] : st;
+      before.gear = want ? 'on' : 'off';
+      before.sec += want ? 15 : 8;
+      on = want;
+    }
+    st.spreadersIn = on;
+  });
 }
 
 export function timelineSeconds(steps) {

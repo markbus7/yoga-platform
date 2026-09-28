@@ -67,3 +67,35 @@ test('the how-to shows until you have done an exercise a few times, or until you
   assert.equal(needsDemo('child', { ...settings, demo: 'off' }, []), false);
   assert.equal(normalize({ settings: { demo: 'bogus', known: 'x' } }).settings.demo, 'new');
 });
+
+test('after every exercise there is time to come out and rest before the next one', async () => {
+  const { buildTimeline } = await import('../src/js/lib/session.js');
+  const steps = buildTimeline([{ id: 'child', sec: 60 }, { id: 'figurefour', sec: 60 }, { id: 'armcircles', sec: 30 }, { id: 'floormelt', sec: 60 }], { transition: 8 });
+  const types = steps.map((s) => s.type).join(' ');
+  assert.equal(types, 'move pose rest move pose switch pose rest move pose rest move pose');
+  const rests = steps.filter((s) => s.type === 'rest');
+  assert.deepEqual(rests.map((r) => r.ex.id), ['child', 'figurefour', 'armcircles']);
+  assert.deepEqual(rests.map((r) => r.next.id), ['figurefour', 'armcircles', 'floormelt']);
+  assert.equal(rests[0].sec, 8, 'a full rest after a hold');
+  assert.ok(rests[2].sec < 8, 'a short pause after moving');
+  assert.ok(steps.find((s) => s.type === 'switch').sec >= 8, 'time to change sides in a hold');
+});
+
+test('toe spreaders: told when to put them in and when to take them out', async () => {
+  const { buildTimeline } = await import('../src/js/lib/session.js');
+  const items = [{ id: 'child', sec: 60 }, { id: 'butterfly', sec: 60 }, { id: 'legsupwall', sec: 60 }, { id: 'ragdoll', sec: 60 }];
+  assert.ok(EXERCISE.butterfly.spreaders && EXERCISE.legsupwall.spreaders && !EXERCISE.ragdoll.spreaders);
+  const without = buildTimeline(items, { transition: 8 });
+  assert.ok(!without.some((s) => s.gear), 'nothing when you have no toe spreaders');
+  const steps = buildTimeline(items, { transition: 8, spreaders: true });
+  const gear = steps.filter((s) => s.gear);
+  assert.deepEqual(gear.map((s) => `${s.type}:${s.gear}:${s.next.id}`), ['rest:on:butterfly', 'rest:off:ragdoll']);
+  const plain = without.filter((s) => s.type === 'rest');
+  assert.equal(gear[0].sec, plain[0].sec + 15, 'extra time to put them in');
+  const moves = steps.filter((s) => s.type === 'move');
+  assert.deepEqual(moves.map((m) => !!m.spreadersIn), [false, true, true, false]);
+  // first exercise already needs them: the reminder goes on the first move
+  const first = buildTimeline([{ id: 'legsupwall', sec: 60 }], { spreaders: true });
+  assert.equal(first[0].type, 'move');
+  assert.equal(first[0].gear, 'on');
+});
