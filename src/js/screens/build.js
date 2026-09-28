@@ -11,7 +11,9 @@ import { estimateSeconds } from '../lib/session.js';
 import { topBar, itemTime } from './common.js';
 import { t, inline } from '../i18n.js';
 
-const MINUTES = [5, 10, 15, 20];
+const MINUTES = [5, 10, 15, 20, 30, 40];
+// Moving-only runs out of fresh stretches after about twenty minutes.
+const MOVING_MAX = 20;
 const STYLES = ['mix', 'moving', 'gravity'];
 const PLACES = ['mat', 'chair'];
 
@@ -52,7 +54,7 @@ export function render(app) {
         <div class="chips" role="group" aria-label="${t('build.areasAria')}">${AREAS.map((a) => html`<button class="chip" data-act="area" data-area="${a.id}" aria-pressed="${stuck.has(a.id)}">${a.name}</button>`)}</div>
       </div>
       <div class="stack" style="--gap:18px">
-        <div class="field"><span class="label">${t('build.time')}</span><div class="seg" role="group" aria-label="${t('build.minutesAria')}">${MINUTES.map((m) => html`<button data-act="minutes" data-v="${m}" aria-pressed="${b.minutes === m}">${t('common.min', { n: m })}</button>`)}</div></div>
+        <div class="field"><span class="label">${t('build.time')} (min)</span><div class="seg" role="group" aria-label="${t('build.minutesAria')}">${MINUTES.map((m) => html`<button data-act="minutes" data-v="${m}" aria-pressed="${b.minutes === m}"${m > MOVING_MAX && b.style === 'moving' ? raw(' disabled') : ''} aria-label="${t('common.min', { n: m })}">${m}</button>`)}</div>${b.style === 'moving' ? html`<span class="muted small">${t('build.movingMax')}</span>` : ''}</div>
         <div class="field"><span class="label">${t('build.style')}</span><div class="seg" role="group" aria-label="${t('build.style')}">${STYLES.map((v) => html`<button data-act="style" data-v="${v}" aria-pressed="${b.style === v}">${t('build.style.' + v)}</button>`)}</div></div>
         <div class="field"><span class="label">${t('build.where')}</span><div class="seg" role="group" aria-label="${t('build.where')}">${PLACES.map((v) => html`<button data-act="place" data-v="${v}" aria-pressed="${b.place === v}">${t('build.place.' + v)}</button>`)}</div></div>
         <p class="muted small">${stuck.size ? t('build.focused', { areas: [...stuck].map((a) => inline(AREA_NAME[a])).join(', ') }) : t('build.none')} ${t('build.careNote')}</p>
@@ -82,6 +84,7 @@ export const actions = {
   },
   style(app, el) {
     app.ui.build.style = el.dataset.v;
+    if (el.dataset.v === 'moving') app.ui.build.minutes = Math.min(app.ui.build.minutes, MOVING_MAX);
     refresh(app, el);
   },
   place(app, el) {

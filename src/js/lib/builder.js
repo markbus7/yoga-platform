@@ -47,11 +47,16 @@ export function buildCustom({ areas = [], minutes = 10, style = 'mix', place = '
     .map((ex) => ({ ex, s: (want.size ? hits(ex) * 3 : 1) + rand() * 2 }))
     .sort((a, b) => b.s - a.s);
 
+  // Long sessions hold each pose longer rather than piling on more poses:
+  // the extra time goes into settling in, which is what gravity holds are for.
+  const deep = minutes >= 40 ? 2 : minutes >= 30 ? 1.6 : 1;
+  const secFor = (ex) => (ex.kind === 'hold' ? Math.round((ex.sec * deep) / 5) * 5 : ex.sec);
+
   const picked = [];
   const has = (id) => picked.some((p) => p.id === id);
   const fits = (cand) => estimateSeconds([...picked, cand], { scale }) <= budget * 1.08;
   const add = (ex) => {
-    const cand = { id: ex.id, sec: ex.sec };
+    const cand = { id: ex.id, sec: secFor(ex) };
     if (has(ex.id) || !fits(cand)) return false;
     picked.push(cand);
     return true;
@@ -70,18 +75,18 @@ export function buildCustom({ areas = [], minutes = 10, style = 'mix', place = '
   }
   // Fill the rest of the time, focus areas first, then anything useful.
   const closing = place === 'mat' && style !== 'moving' && minutes >= 10 ? EXERCISES.find((e) => e.id === 'floormelt') : null;
-  const reserve = closing ? closing.sec + 8 : 0;
+  const reserve = closing ? secFor(closing) + 8 : 0;
   for (const { ex } of scored) {
     if (estimateSeconds(picked, { scale }) >= budget - reserve - 30) break;
     if (ex === closing) continue;
     if (want.size && !hits(ex)) continue;
-    if (estimateSeconds([...picked, { id: ex.id, sec: ex.sec }], { scale }) > budget - reserve + 20) continue;
+    if (estimateSeconds([...picked, { id: ex.id, sec: secFor(ex) }], { scale }) > budget - reserve + 20) continue;
     add(ex);
   }
   for (const { ex } of scored) {
     if (estimateSeconds(picked, { scale }) >= budget - reserve - 30) break;
     if (ex === closing) continue;
-    if (estimateSeconds([...picked, { id: ex.id, sec: ex.sec }], { scale }) > budget - reserve + 20) continue;
+    if (estimateSeconds([...picked, { id: ex.id, sec: secFor(ex) }], { scale }) > budget - reserve + 20) continue;
     add(ex);
   }
 
@@ -94,7 +99,7 @@ export function buildCustom({ areas = [], minutes = 10, style = 'mix', place = '
     const warmB = eb.kind === 'flow' ? 0 : 1;
     return positionRank(ea.position) - positionRank(eb.position) || warmA - warmB;
   });
-  if (closing && !has(closing.id)) picked.push({ id: closing.id, sec: closing.sec });
+  if (closing && !has(closing.id)) picked.push({ id: closing.id, sec: secFor(closing) });
 
   // Few exercises for a long session (e.g. moving only): stretch each one to fill the time.
   const total = estimateSeconds(picked, { scale });

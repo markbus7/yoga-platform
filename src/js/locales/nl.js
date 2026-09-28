@@ -144,6 +144,7 @@ export const NL = {
   'build.style': 'Stijl',
   'build.where': 'Waar',
   'build.minutesAria': 'Minuten',
+  'build.movingMax': 'Alleen bewegen gaat tot 20 minuten. Kies Mix of Zwaartekracht voor langer.',
   'build.style.mix': 'Mix',
   'build.style.moving': 'Bewegend',
   'build.style.gravity': 'Zwaarte\u00ADkracht',
