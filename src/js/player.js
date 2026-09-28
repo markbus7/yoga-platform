@@ -67,6 +67,12 @@ class Player {
     this.onKey = (e) => this.key(e);
     document.addEventListener('keydown', this.onKey);
     this.loop = this.loop.bind(this);
+    // Side by side (landscape): centre the figure; stacked: keep it low, near the timer.
+    this.wide = typeof matchMedia === 'function' ? matchMedia('(orientation: landscape) and (min-width: 600px) and (max-height: 820px)') : null;
+    this.onWide = () => {
+      if (this.figure) this.figure.setAlign(this.figAlign());
+    };
+    if (this.wide && this.wide.addEventListener) this.wide.addEventListener('change', this.onWide);
     unlockAudio();
     if (s.checkins) this.showCheckin();
     else this.begin();
@@ -192,7 +198,7 @@ class Player {
       this.pickKey = pickKey;
       this.r.views.innerHTML = pickKey ? viewPick(ex, viewOf(this.app, ex), 'data-p') : '';
     }
-    if (!this.figure) this.figure = mountFigure(this.r.fig, spec, { mode, mirror, enterSec, label: ex.name });
+    if (!this.figure) this.figure = mountFigure(this.r.fig, spec, { mode, mirror, enterSec, label: ex.name, align: this.figAlign() });
     else if (this.figSpec !== spec) this.figure.setSpec(spec, { mode, mirror, enterSec });
     else {
       this.figure.setMirror(mirror);
@@ -254,24 +260,32 @@ class Player {
         <div class="grow">${esc(t('player.count', { n: exNum, total: this.exCount }))}</div>
         <span style="width:44px"></span>
       </div>
-      <div class="learn-body">
-        <div class="learn-fig" data-learn-fig></div>
-        ${viewPick(ex, viewOf(this.app, ex), 'data-p')}
-        <span class="kicker">${esc(t('learn.title'))}</span>
-        <h2 tabindex="-1">${esc(ex.name)}</h2>
-        ${speechAvailable() ? `<button class="btn btn-ghost btn-small learn-replay" data-p="replay">${icon('replay')} ${esc(t('learn.replay'))}</button>` : ''}
-        <ol class="learn-steps">${ex.setup.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
-        ${ex.sides ? `<p class="learn-note">${esc(t('learn.sides', { a: ex.sideLabels[0], b: ex.sideLabels[1] }))}</p>` : ''}
-        ${tip(t('ex.feelIt') + ':', ex.feel)}
-        ${tip(t('ex.easier') + ':', ex.easier)}
-      </div>
-      <div class="learn-actions">
-        <button class="btn btn-lg btn-wide" data-p="learn-go">${icon('play')} ${esc(t(resume ? 'learn.resume' : 'learn.go'))}</button>
-        ${resume ? '' : `<button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>`}
+      <div class="learn-main">
+        <div class="learn-visual">
+          ${viewPick(ex, viewOf(this.app, ex), 'data-p')}
+          <div class="learn-fig" data-learn-fig></div>
+        </div>
+        <div class="learn-side">
+          <div class="learn-text">
+            <span class="kicker">${esc(t('learn.title'))}</span>
+            <h2 tabindex="-1">${esc(ex.name)}</h2>
+            ${speechAvailable() ? `<button class="btn btn-ghost btn-small learn-replay" data-p="replay">${icon('replay')} ${esc(t('learn.replay'))}</button>` : ''}
+            <ol class="learn-steps">${ex.setup.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+            ${ex.sides ? `<p class="learn-note">${esc(t('learn.sides', { a: ex.sideLabels[0], b: ex.sideLabels[1] }))}</p>` : ''}
+            ${tip(t('ex.feelIt') + ':', ex.feel)}
+            ${tip(t('ex.easier') + ':', ex.easier)}
+          </div>
+          <div class="learn-actions">
+            <button class="btn btn-lg btn-wide" data-p="learn-go">${icon('play')} ${esc(t(resume ? 'learn.resume' : 'learn.go'))}</button>
+            ${resume ? '' : `<button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>`}
+          </div>
+        </div>
       </div>`;
     this.el.appendChild(box);
-    this.learnFig = mountFigure(box.querySelector('[data-learn-fig]'), figureFor(ex, this.spreaders, viewOf(this.app, ex)), { mode: 'preview', label: ex.name });
+    this.learnFig = mountFigure(box.querySelector('[data-learn-fig]'), figureFor(ex, this.spreaders, viewOf(this.app, ex)), { mode: 'preview', label: ex.name, align: 'middle' });
     box.querySelector('h2').focus({ preventScroll: true });
+    // Some browsers scroll to the focused title anyway; start the text at the top.
+    box.querySelector('.learn-text').scrollTop = 0;
     this.syncAmbient();
     if (this.sound && this.voice) this.sayHowTo(ex);
   }
@@ -341,6 +355,10 @@ class Player {
     if (this.phase !== 'run') return;
     if (!this.muted && (!this.paused || this.learning !== null)) resumeAmbient();
     else pauseAmbient();
+  }
+
+  figAlign() {
+    return this.wide && this.wide.matches ? 'middle' : 'bottom';
   }
 
   voiceOpts() {
@@ -677,6 +695,7 @@ class Player {
   close() {
     this.phase = 'closed';
     stopAmbient(0.6);
+    if (this.wide && this.wide.removeEventListener) this.wide.removeEventListener('change', this.onWide);
     cancelAnimationFrame(this.raf);
     clearInterval(this.backup);
     clearTimeout(this.cueTimer);
