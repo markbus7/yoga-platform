@@ -21,12 +21,30 @@ function speaking(on, text = '') {
   if (on) speechTimer = setTimeout(() => speaking(false), 1500 + text.length * 90);
 }
 
+let resumedAt = 0;
+
+/**
+ * Browsers pause sound when you leave the page (iOS calls it "interrupted").
+ * Pick it back up when you come back; iOS may only allow it on the next tap,
+ * so taps try again too.
+ */
+function wake() {
+  if (!ctx || ctx.state === 'running' || ctx.state === 'closed') return;
+  resumedAt = Date.now();
+  try {
+    const p = ctx.resume();
+    if (p && p.catch) p.catch(() => {});
+  } catch {
+    /* the next tap tries again */
+  }
+}
+
 /** Call from a tap: browsers only allow sound after the viewer interacts. */
 export function unlockAudio() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!ctx && AC) ctx = new AC();
-    if (ctx && ctx.state === 'suspended') ctx.resume();
+    wake();
   } catch {
     ctx = null;
   }
@@ -49,6 +67,13 @@ export function unlockAudio() {
  */
 export function chime(kind = 'start', volume = 0.7) {
   if (!ctx || volume <= 0) return;
+  // Sound is paused (you left the page): try to wake it, and drop this chime
+  // unless it is about to start, so old chimes do not all ring at once later.
+  if (ctx.state !== 'running') {
+    const waking = Date.now() - resumedAt < 1500;
+    wake();
+    if (!waking) return;
+  }
   try {
     const t = ctx.currentTime + 0.02;
     const out = ctx.createGain();
@@ -188,6 +213,11 @@ export function keepAwake(on) {
 
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
-    if (wantLock && document.visibilityState === 'visible' && !lock) acquire();
+    if (document.visibilityState !== 'visible') return;
+    wake();
+    if (wantLock && !lock) acquire();
   });
+  window.addEventListener('pageshow', wake);
+  window.addEventListener('focus', wake);
+  for (const ev of ['pointerdown', 'touchend', 'keydown']) document.addEventListener(ev, wake, { capture: true, passive: true });
 }

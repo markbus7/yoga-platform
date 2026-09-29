@@ -507,6 +507,8 @@ export const NL = {
   'say.switch': 'Wissel van kant. {side}.',
   'say.done': 'Goed gedaan. Neem even de tijd om te merken hoe je lichaam nu aanvoelt.',
   'say.release': 'Klaar.',
+  'say.goHold': 'Start. Blijf nu in de houding en adem rustig.',
+  'say.goFlow': 'Start. Beweeg rustig mee met je adem.',
   'say.again': 'Nog een keer: {text}',
   'say.skipped': 'Overgeslagen.',
   'say.getReady': 'Ga in positie. We beginnen zo.',

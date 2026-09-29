@@ -508,6 +508,8 @@ export const EN = {
   'say.switch': 'Switch sides. {side}.',
   'say.done': 'Well done. Take a moment to notice how your body feels.',
   'say.release': 'Done.',
+  'say.goHold': 'Start. Stay in the pose now and breathe.',
+  'say.goFlow': 'Start. Move slowly with your breath.',
   'say.again': 'Once more: {text}',
   'say.skipped': 'Skipped.',
   'say.getReady': 'Get into position. We start in a moment.',

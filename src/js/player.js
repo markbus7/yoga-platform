@@ -250,7 +250,11 @@ class Player {
       } else if (st.type === 'switch') {
         if (this.chimes) chime('end', vol);
         if (this.voice) speak(t('say.switch', { side: ex.sideLabels[1] }), this.voiceOpts());
-      } else if (this.chimes) chime('start', vol);
+      } else {
+        // the hold (or its other side) starts now: say so, not only a tone
+        if (this.chimes) chime('start', vol);
+        if (this.voice && !isBreath) speak(t(ex.kind === 'flow' ? 'say.goFlow' : 'say.goHold'), this.voiceOpts());
+      }
     }
     this.paint(true);
   }
