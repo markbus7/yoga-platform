@@ -1047,6 +1047,10 @@ details.table-view th { color: var(--ink-2); font-weight: 700; font-size: 13px; 
 .clock { font-family: var(--font-display); font-weight: 700; font-stretch: 125%; font-size: clamp(40px, 11vw, 64px); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .controls { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: 6px; }
 .controls .icon-btn { width: 56px; height: 56px; }
+.controls .ctl { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; }
+.controls .ctl .icon-btn { pointer-events: none; }
+.controls .ctl-label { font-size: 12px; font-weight: 750; letter-spacing: 0.02em; opacity: 0.85; }
+.learn-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 18px; }
 .controls .play { width: 76px; height: 76px; background: var(--card-ink); color: var(--card); }
 .controls .play svg { width: 32px; height: 32px; }
 .next-up { text-align: center; font-size: 14px; font-weight: 600; opacity: 0.8; min-height: 21px; }
