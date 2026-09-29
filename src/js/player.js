@@ -149,9 +149,9 @@ class Player {
           <div class="clock" data-r="clock" aria-hidden="true"></div>
           <p class="cue" data-r="cue"></p>
           <div class="controls">
-            <button class="icon-btn" data-p="prev" aria-label="${esc(t('player.goBack'))}">${icon('prev')}</button>
+            <button class="ctl" data-p="prev" aria-label="${esc(t('player.goBack'))}"><span class="icon-btn">${icon('prev')}</span><span class="ctl-label" aria-hidden="true">${esc(t('player.redo'))}</span></button>
             <button class="icon-btn play" data-p="toggle" aria-label="${esc(t('player.pause'))}">${icon('pause')}</button>
-            <button class="icon-btn" data-p="next" aria-label="${esc(t('player.skip'))}">${icon('next')}</button>
+            <button class="ctl" data-p="next" aria-label="${esc(t('player.skip'))}"><span class="icon-btn">${icon('next')}</span><span class="ctl-label" aria-hidden="true">${esc(t('player.skipShort'))}</span></button>
           </div>
           <p class="next-up" data-r="nextup"></p>
         </div>
@@ -166,7 +166,7 @@ class Player {
 
   // ---------- running ----------
 
-  go(index, quiet = false) {
+  go(index, quiet = false, how = '') {
     this.i = index;
     this.elapsed = 0;
     this.spoken = new Set();
@@ -174,11 +174,14 @@ class Player {
     if (index >= this.steps.length) return this.finish();
     const st = this.steps[index];
     if (st.type === 'move' && this.demoFor.has(st.ex.id) && !this.demoShown.has(st.ex.id)) return this.showDemo(index);
-    this.showStep(quiet);
+    this.showStep(quiet, how);
   }
 
-  /** Put the current step on screen, and (unless `quiet`) announce it. */
-  showStep(quiet = false) {
+  /**
+   * Put the current step on screen, and (unless `quiet`) announce it.
+   * `how` is 'again' after the back button and 'skipped' after skipping.
+   */
+  showStep(quiet = false, how = '') {
     const index = this.i;
     const st = this.steps[index];
     const ex = st.ex;
@@ -242,7 +245,8 @@ class Player {
         if (this.voice) speak([t('say.release'), ex.exit || t('say.comeOut'), gearSay].filter(Boolean).join(' '), this.voiceOpts());
       } else if (st.type === 'move') {
         if (this.chimes) chime('next', vol);
-        if (this.voice) speak([t(st.first ? 'say.first' : 'say.next', { text: ex.say }), gearSay].filter(Boolean).join(' '), this.voiceOpts());
+        const line = how === 'again' ? t('say.again', { text: ex.say }) : t(st.first ? 'say.first' : 'say.next', { text: ex.say });
+        if (this.voice) speak([how === 'skipped' ? t('say.skipped') : '', line, gearSay].filter(Boolean).join(' '), this.voiceOpts());
       } else if (st.type === 'switch') {
         if (this.chimes) chime('end', vol);
         if (this.voice) speak(t('say.switch', { side: ex.sideLabels[1] }), this.voiceOpts());
@@ -375,7 +379,10 @@ class Player {
           <div class="learn-actions">
             <button class="btn btn-lg btn-wide" data-p="learn-go">${icon('play')} ${esc(t(resume ? 'learn.resume' : 'learn.go'))}</button>
             ${resume ? '' : `<div class="learn-auto" data-auto><span class="auto-bar" aria-hidden="true"><i></i></span><span class="small">${esc(t('learn.auto'))}</span><button class="link-btn" data-p="learn-wait" style="color:inherit">${esc(t('learn.wait'))}</button></div>`}
-            ${resume ? '' : `<button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>`}
+            <div class="learn-links">
+              ${resume ? '' : `<button class="link-btn" data-p="learn-known" style="color:inherit">${esc(t('learn.known'))}</button>`}
+              <button class="link-btn" data-p="learn-skip" style="color:inherit">${esc(t('learn.skip'))}</button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -449,6 +456,22 @@ class Player {
     if (this.sound && this.chimes) chime('next', this.app.store.state.settings.volume);
     if (this.sound && this.voice) speak(t('say.getReady'), this.voiceOpts());
     if (this.paused) this.toggle();
+  }
+
+  /** From the how-to: leave this exercise out and carry on with the next one. */
+  skipFromDemo() {
+    const index = this.learning;
+    if (index === null) return;
+    clearTimeout(this.autoTimer);
+    this.demoShown.add(this.steps[index].ex.id);
+    stopSpeaking();
+    const box = this.el.querySelector('.learn');
+    if (box) box.remove();
+    this.learnFig = null;
+    this.learning = null;
+    if (!this.learnResume) this.i = index;
+    if (this.paused) this.toggle();
+    this.skip();
   }
 
   sayHowTo(ex, st = null) {
@@ -646,18 +669,33 @@ class Player {
     this.syncAmbient();
   }
 
-  skip() {
-    let j = this.i + 1;
-    while (this.steps[j] && (this.steps[j].type === 'switch' || (this.steps[j].type === 'rest' && !this.steps[j].gear))) j++;
-    this.go(j);
+  /** The move step that starts the exercise on screen; during a rest, the one you just finished. */
+  exerciseStart(i = this.i) {
+    const ex = this.steps[i] && this.steps[i].ex;
+    for (let j = i; j >= 0; j--) if (this.steps[j].type === 'move' && this.steps[j].ex === ex) return j;
+    return 0;
   }
 
+  /** Skip the rest of this exercise (both sides) and go on to the next one. */
+  skip() {
+    let j = this.i + 1;
+    while (j < this.steps.length && this.steps[j].type !== 'move') j++;
+    // keep a rest that says to put toe spreaders in or out
+    if (j < this.steps.length && j - 1 > this.i && this.steps[j - 1].type === 'rest' && this.steps[j - 1].gear) j--;
+    this.go(j, false, 'skipped');
+  }
+
+  /**
+   * Back: do the exercise on screen again from the start (during a rest, the
+   * one you just finished). Pressed right at the start of an exercise, it goes
+   * back to the one before.
+   */
   prev() {
-    if (this.elapsed > 3) return this.go(this.i);
-    for (let j = this.i - 1; j >= 0; j--) {
-      if (this.steps[j].type === 'move') return this.go(j);
+    const m = this.exerciseStart();
+    if (this.i === m && this.elapsed <= 3) {
+      for (let j = m - 1; j >= 0; j--) if (this.steps[j].type === 'move') return this.go(j, false, 'again');
     }
-    this.go(0);
+    this.go(m, false, 'again');
   }
 
   confirmEnd() {
@@ -744,6 +782,7 @@ class Player {
     } else if (act === 'learn-go') this.endDemo();
     else if (act === 'learn-known') this.endDemo(true);
     else if (act === 'learn-wait') this.stopAuto();
+    else if (act === 'learn-skip') this.skipFromDemo();
     else if (act === 'howto') this.showDemo(this.i, { resume: true });
     else if (act === 'lang') this.switchLang();
     else if (act === 'replay') this.replay();
